@@ -1,4 +1,4 @@
-print("load the script!!")
+print("script is load 😁")
 wait(1)
 print("script is running wait a 1 second")
 wait(1)
@@ -41,7 +41,7 @@ local visualize_Enabled = false
 local ai_Enabled = false
 local auto_win = false
 local tp_hit = false
-local potanum = 16
+local potanum = 17
 local Services = {game:GetService("AdService"),game:GetService("SocialService")}
 
 local function get_closest_entity(Object)
@@ -1345,7 +1345,7 @@ end
 
 -- Toggle untuk FPS Booster
 Window:AddToggle({
-    Title = "FPS Booster /Double Fps Booster\",
+    Title = "FPS Booster",
     Description = "Reduce Quality game(not remove sword effect)",
     Tab = Player,  -- Gantilah dengan tab yang sesuai
     Callback = function(state)
