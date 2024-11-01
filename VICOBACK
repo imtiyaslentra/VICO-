@@ -1,7 +1,8 @@
 print("script is load 😁")
 wait(1)
-print("script is running wait a 1 second 😈🧏")
+print("script is running wait a 1 second 😈")
 wait(1)
+print("dont be sigma because you sigma 🧏")
 if _G.Ran == true then return end
 wait()
 _G.Ran = true
