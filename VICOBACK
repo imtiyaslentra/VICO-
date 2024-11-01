@@ -4,7 +4,7 @@ print("script is running wait a 1 second 😈")
 wait(1)
 print("dont be sigma because you sigma 🧏")
 wait(1)
-print("full of print right 🙏😸")
+print("full of print right 🙏😸?")
 if _G.Ran == true then return end
 wait()
 _G.Ran = true
@@ -101,7 +101,7 @@ end
 local aura_table = {
 	canParry = true,
 	is_Spamming = false,
-	parry_Range = 31,
+	parry_Range = 0,
 	spam_Range = 0,  
 	hit_Count = 0,
 	hit_Time = tick(),
@@ -858,7 +858,7 @@ autoparryvar = RunService.Heartbeat:Connect(function()
         return
     end
 
-    local ping = Stats.Network.ServerStatsItem["Data Ping"]:GetValue() / 10
+    local ping = Stats.Network.ServerStatsItem["Data Ping"]:GetValue() / 50
     local self
 
     if training_mode then
@@ -985,17 +985,12 @@ autoparryvar = RunService.Heartbeat:Connect(function()
         end
 
         aura_table.hit_Count = aura_table.hit_Count + 1
-        task.delay(0.55 + (ping / 100), function()
+        task.delay(0.15 + (ping / 1000), function()
             aura_table.hit_Count = aura_table.hit_Count - 1
         end)
 
         aura_table.hit_Time = tick()
         aura_table.canParry = false
-        aura_table.hit_Count += 1
-
-        task.delay(0.015, function()
-           aura_table.hit_Count -= 1
-       end)
     end
 
     task.spawn(function()
