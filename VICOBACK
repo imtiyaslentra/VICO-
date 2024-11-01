@@ -826,18 +826,24 @@ task.spawn(function()
                 -- Perform spamming asynchronously for speed using task.defer
                 task.defer(function()
                     for count = 1, potanum do
-                        -- Recalculate distance on each iteration
+                        -- Update distance each iteration
                         distanceToEntity = local_player:DistanceFromCharacter(entityPosition)
+                        
                         -- Exit loop if conditions are no longer met
                         if not auto_spam or not ismyautoparryspamming or distanceToEntity > aura_table.spam_Range then
-                            break
+                            -- Ensure the function exits without causing errors
+                            ismyautoparryspamming = false
+                            return
                         end
+
+                        -- Fire server with the appropriate parameters
                         if auto_curve then
                             originalParryRemote:FireServer(0, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
                         else
                             originalParryRemote:FireServer(0, cf, unpack(fireArgs))
                         end
-                        task.wait(0.1)  -- Optional wait to control spam speed
+
+                        task.wait(0.1)  -- Control the rate of spam (optional)
                     end
                 end)
             else
@@ -849,7 +855,6 @@ task.spawn(function()
             ismyautoparryspamming = false
         end
     end)
-end)
 
 autoparryvar = RunService.Heartbeat:Connect(function()
     if not aura_Enabled or not (workspace.Alive:FindFirstChild(local_player.Name) or training_mode) then
