@@ -1,6 +1,6 @@
 print("script is load 😁")
 wait(1)
-print("script is running wait a 1 second")
+print("script is running wait a 1 second 😈")
 wait(1)
 if _G.Ran == true then return end
 wait()
@@ -805,34 +805,39 @@ task.spawn(function()
         if closest_Entity and workspace.Alive:FindFirstChild(closest_Entity.Name) and ((not standalone and aura_table.is_Spamming) or (standalone)) then
             local playerPosition = local_player.Character.PrimaryPart.Position
             local entityPosition = closest_Entity.HumanoidRootPart.Position
-                local distanceToEntity = local_player:DistanceFromCharacter(entityPosition)
-                -- Perform spam actions only when within range
-                if distanceToEntity <= aura_table.spam_Range then
-                    ismyautoparryspamming = true
+            local distanceToEntity = local_player:DistanceFromCharacter(entityPosition)
+            
+            -- Perform spam actions only when within range
+            if distanceToEntity <= aura_table.spam_Range then
+                ismyautoparryspamming = true
 
-                    -- Pre-compute values before the loop for efficiency
-                    local cf = camera.CFrame
-                    local randomTarget = Vector3.new(math.random(-1000, 1000), math.random(0, 1000), math.random(100, 1000))
-                    local targetPosition = closest_Entity_To_mouse.HumanoidRootPart.Position
-                    local fireArgs = {
-                        {[closest_Entity_To_mouse.Name] = targetPosition},
-                        {targetPosition.X, targetPosition.Y}
-                    }
+                -- Pre-compute values before the loop for efficiency
+                local cf = camera.CFrame
+                local randomTarget = Vector3.new(math.random(-1000, 1000), math.random(0, 1000), math.random(100, 1000))
+                local targetPosition = closest_Entity_To_mouse.HumanoidRootPart.Position
+                local fireArgs = {
+                    {[closest_Entity_To_mouse.Name] = targetPosition},
+                    {targetPosition.X, targetPosition.Y}
+                }
 
-                    -- Perform spamming asynchronously for speed using task.defer
-                    task.defer(function()
-                        for count = 1, potanum do
-                            if auto_curve then
-                                originalParryRemote:FireServer(0, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
-                            else
-                                originalParryRemote:FireServer(0, cf, unpack(fireArgs))
-                            end
+                -- Perform spamming asynchronously for speed using task.defer
+                task.defer(function()
+                    for count = 1, potanum do
+                        -- Exit loop if conditions are no longer met
+                        if not auto_spam or not ismyautoparryspamming or distanceToEntity > aura_table.spam_Range then
+                            break
                         end
-                    end)
-                else
-                    -- Reset spam state if out of range
-                    ismyautoparryspamming = false
-                end
+                        if auto_curve then
+                            originalParryRemote:FireServer(0, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
+                        else
+                            originalParryRemote:FireServer(0, cf, unpack(fireArgs))
+                        end
+                    end
+                end)
+            else
+                -- Reset spam state if out of range
+                ismyautoparryspamming = false
+            end
         else
             -- Reset spam state if entity is not found
             ismyautoparryspamming = false
