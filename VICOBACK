@@ -914,7 +914,7 @@ autoparryvar = RunService.Heartbeat:Connect(function()
     local player_Velocity = local_player.Character.HumanoidRootPart.AssemblyLinearVelocity
     local player_isMoving = player_Velocity.Magnitude > 0
     local ball_speed_Limited = math.min(ball_Speed / 1000, 0.1)
-    local ball_predicted_Distance = (ball_Distance - ping / 15.3) - (ball_Speed / 3.5)
+    local ball_predicted_Distance = (ball_Distance - ping / 15.5) - (ball_Speed / 3.5)
 
     local targetPosition = closest_Entity_To_mouse.HumanoidRootPart.Position
     local target_Distance = local_player:DistanceFromCharacter(targetPosition)
@@ -926,8 +926,8 @@ autoparryvar = RunService.Heartbeat:Connect(function()
     local target_Dot = target_isMoving and math.max(target_Direction:Dot(target_Velocity.Unit), 0)
 
     aura_table.spam_Range = math.clamp(math.max(math.max(ping / 8.5, 15) + ball_Speed / 7.5, 8.4), 25, 1200)
-    local speedFactor = 3.5 - (ping / 100)
-    local speedFactorPingBased = 9.5 - (ping / 100)
+    local speedFactor = 3 - (ping / 100)
+    local speedFactorPingBased = 7.5 - (ping / 100)
     aura_table.parry_Range = math.max(math.max(ping, 4) + ball_Speed / speedFactor, speedFactorPingBased)
 
     if target_isMoving then
@@ -988,6 +988,11 @@ autoparryvar = RunService.Heartbeat:Connect(function()
 
         aura_table.hit_Time = tick()
         aura_table.canParry = false
+        aura_table.hit_Count += 1
+
+        task.delay(0.15, function()
+           aura_table.hit_Count -= 1
+       end)
     end
 
     task.spawn(function()
@@ -1450,7 +1455,7 @@ local function checkSpamming()
             Window:Notify({
                 Title = "Active spam seems to be detected",
                 Description = "spam has been activated, if spam activates itself when approaching, just stay away from it for protective", 
-                Duration = 3
+                Duration = 4
             })
             notificationShown = true  -- Set the flag to true after showing the notification
         elseif not aura_table.is_Spamming then
@@ -1490,36 +1495,3 @@ print("Loading Succesful! 😹💥")
 
 --Execute Checker  
 loadstring(game:HttpGet("https://raw.githubusercontent.com/StarX-exploit/executed/refs/heads/main/exe.lua"))()
-
-local function optimizePerformance()
-    -- Boost FPS by disabling unnecessary features and reducing settings
-    game:GetService("Workspace").StreamingEnabled = true
-    settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 -- Lowest quality for best FPS
-    game:GetService("Lighting").GlobalShadows = false -- Disable shadows
-    game:GetService("Lighting").Brightness = 2 -- Adjust lighting for smoothness
-    game:GetService("UserInputService").MouseDeltaSensitivity = 0.5 -- Reduce mouse lag
-    setfpscap(999) -- Increase FPS cap to 120 for smoother performance
-    
-    -- Optimize memory usage
-    local function optimizeMemoryUsage()
-        local serviceMemoryLimits = {
-            ['Players'] = 2048,
-            ['Workspace'] = 2048,
-            ['ReplicatedStorage'] = 2048,
-            -- Add more services as needed
-        }
-
-        for serviceName, limit in pairs(serviceMemoryLimits) do
-            local service = game:GetService(serviceName)
-            if service then
-                -- Assuming there is a method to set memory limit
-                -- Uncomment if such a method exists
-                -- service:SetMemoryLimit(limit)
-            end
-        end
-    end
-    optimizeMemoryUsage()
-end
-
-optimizePerformance() -- Call the performance optimization function
-print("Performance optimization is complete.")
