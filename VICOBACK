@@ -41,7 +41,7 @@ local visualize_Enabled = false
 local ai_Enabled = false
 local auto_win = false
 local tp_hit = false
-local potanum = 35
+local potanum = 16
 local Services = {game:GetService("AdService"),game:GetService("SocialService")}
 
 local function get_closest_entity(Object)
@@ -1345,7 +1345,7 @@ end
 
 -- Toggle untuk FPS Booster
 Window:AddToggle({
-    Title = "FPS Booster",
+    Title = "FPS Booster /Double Fps Booster\",
     Description = "Reduce Quality game(not remove sword effect)",
     Tab = Player,  -- Gantilah dengan tab yang sesuai
     Callback = function(state)
