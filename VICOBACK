@@ -2,9 +2,9 @@ print("script is load 😁")
 wait(1)
 print("script is running wait a 1 second 😈")
 wait(1)
-print("dont be sigma because you sigma 🧏")
+print("dont be sigma because you sigma 🧏, Nguwawor loh ya")
 wait(1)
-print("full of print right 🙏😸?")
+print("full of print right 🙏😸!?")
 if _G.Ran == true then return end
 wait()
 _G.Ran = true
@@ -809,7 +809,7 @@ task.spawn(function()
             local playerPosition = local_player.Character.PrimaryPart.Position
             local entityPosition = closest_Entity.HumanoidRootPart.Position
             local distanceToEntity = local_player:DistanceFromCharacter(entityPosition)
-            
+
             -- Perform spam actions only when within range
             if distanceToEntity <= aura_table.spam_Range then
                 ismyautoparryspamming = true
@@ -826,6 +826,8 @@ task.spawn(function()
                 -- Perform spamming asynchronously for speed using task.defer
                 task.defer(function()
                     for count = 1, potanum do
+                        -- Recalculate distance on each iteration
+                        distanceToEntity = local_player:DistanceFromCharacter(entityPosition)
                         -- Exit loop if conditions are no longer met
                         if not auto_spam or not ismyautoparryspamming or distanceToEntity > aura_table.spam_Range then
                             break
@@ -835,6 +837,7 @@ task.spawn(function()
                         else
                             originalParryRemote:FireServer(0, cf, unpack(fireArgs))
                         end
+                        task.wait(0.1)  -- Optional wait to control spam speed
                     end
                 end)
             else
@@ -846,6 +849,7 @@ task.spawn(function()
             ismyautoparryspamming = false
         end
     end)
+end)
 
 autoparryvar = RunService.Heartbeat:Connect(function()
     if not aura_Enabled or not (workspace.Alive:FindFirstChild(local_player.Name) or training_mode) then
