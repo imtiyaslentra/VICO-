@@ -3,6 +3,8 @@ wait(1)
 print("script is running wait a 1 second 😈")
 wait(1)
 print("dont be sigma because you sigma 🧏")
+wait(1)
+print("full of print 😹")
 if _G.Ran == true then return end
 wait()
 _G.Ran = true
