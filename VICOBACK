@@ -1,4 +1,4 @@
-print("script is load 😁👍")
+print("script is load 😁👍🤮")
 wait(1)
 print("script is running wait a 1 second 💪😈")
 wait(1)
@@ -817,60 +817,70 @@ task.spawn(function()
         RunService.Heartbeat:Connect(function()
         -- Pre-check if auto_spam is enabled, player exists, and not in training mode
         if not auto_spam or not workspace.Alive:FindFirstChild(local_player.Name) or training_mode then
-			data.target_Count = 0
-			data.hit_Count = 0
-			data.is_Spamming = false
-                        ismyautoparryspamming = false
-			data.last_target = nil
-			return
-		end    
+            data.target_Count = 0
+            data.hit_Count = 0
+            data.is_Spamming = false
+            data.last_target = nil
+            return
+        end    
 
-        if closest_Entity then
-            if workspace.Alive:FindFirstChild(closest_Entity.Name) then
-                if data.is_Spamming then
-                    if workspace.Alive:FindFirstChild(local_player.Name) and data.can_spam and (local_player.Character.PrimaryPart.Position - closest_Entity.HumanoidRootPart.Position).Magnitude <= data.spam_Range then
-                        task.spawn(function()
-                            ismyautoparryspamming = true
-                            repeat
-                                for v = 1, 150 do
-                                    if auto_curve then
-                                        originalParryRemote:FireServer(
-                                            0,
-                                            CFrame.new(camera.CFrame.Position, Vector3.new(math.random(-1000, 1000), math.random(0, 1000), math.random(100, 1000))),
-                                            {[closest_Entity_To_mouse.Name] = closest_Entity_To_mouse.HumanoidRootPart.Position},
-                                            {closest_Entity_To_mouse.HumanoidRootPart.Position.X, closest_Entity_To_mouse.HumanoidRootPart.Position.Y},
-                                            false
-                                        )
-                                    else
-                                        local cf = camera.CFrame
-                                        local x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22 = cf:GetComponents()
+        -- Check if closest_Entity exists and is within range
+        if closest_Entity and workspace.Alive:FindFirstChild(closest_Entity.Name) then
+            if data.is_Spamming then
+                if workspace.Alive:FindFirstChild(local_player.Name) and data.can_spam and (local_player.Character.PrimaryPart.Position - closest_Entity.HumanoidRootPart.Position).Magnitude <= data.spam_Range then
+                    task.spawn(function()
+                        if camera then
+                            local cf = camera.CFrame
+                            local x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22 = cf:GetComponents()
+
+                            -- Loop spam for 400 iterations for fast spamming
+                            for count = 1, 400 do
+                                -- Check if spamming conditions are still met
+                                if not data.is_Spamming or not data.spam_Range or not data.can_spam or not closest_Entity or not workspace.Alive:FindFirstChild(closest_Entity.Name) then
+                                    break -- Stop spamming if any condition fails
+                                end
+                                
+                                -- Ensure closest_Entity has HumanoidRootPart
+                                if closest_Entity:FindFirstChild("HumanoidRootPart") then
+                                    originalParryRemote:FireServer(
+                                        0,
+                                        CFrame.new(x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22),
+                                        {[closest_Entity.Name] = closest_Entity.HumanoidRootPart.Position},
+                                        {closest_Entity.HumanoidRootPart.Position.X, closest_Entity.HumanoidRootPart.Position.Y},
+                                        false
+                                    )
+                                else
+                                    -- Backup logic to find an alternative target if closest_Entity is missing HumanoidRootPart
+                                    local backupTarget = nil
+                                    for _, potentialTarget in pairs(Players:GetPlayers()) do
+                                        if potentialTarget ~= local_player and potentialTarget.Character and potentialTarget.Character:FindFirstChild("HumanoidRootPart") then
+                                            backupTarget = potentialTarget
+                                            break -- Exit loop after finding backup target
+                                        end
+                                    end
+
+                                    -- Fire server event for backup target if found
+                                    if backupTarget and backupTarget.Character and backupTarget.Character:FindFirstChild("HumanoidRootPart") then
+                                        local backupPosition = backupTarget.Character.HumanoidRootPart.Position
                                         originalParryRemote:FireServer(
                                             0,
                                             CFrame.new(x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22),
-                                            {[closest_Entity_To_mouse.Name] = closest_Entity_To_mouse.HumanoidRootPart.Position},
-                                            {closest_Entity_To_mouse.HumanoidRootPart.Position.X, closest_Entity_To_mouse.HumanoidRootPart.Position.Y},
+                                            {[backupTarget.Name] = backupPosition},
+                                            {backupPosition.X, backupPosition.Y},
                                             false
                                         )
                                     end
                                 end
+                                
+                                -- Wait for a frame to prevent overwhelming the server
                                 RunService.Heartbeat:Wait()
-                            until not data.is_Spamming or not data.can_spam or (local_player.Character.PrimaryPart.Position - closest_Entity.HumanoidRootPart.Position).Magnitude > data.spam_Range or not closest_Entity or not workspace.Alive:FindFirstChild(closest_Entity.Name)
-                        end)
-                    else
-                        -- Reset spam state if out of range
-                        ismyautoparryspamming = false
-                    end
+                            end
+                        end
+                    end)
                 end
-            else
-                -- Reset spam state if entity is not found
-                ismyautoparryspamming = false
             end
-        else
-            -- Reset spam state if no closest entity
-            ismyautoparryspamming = false
         end
     end)
-
 
 autoparryvar = 
 RunService.Heartbeat:Connect(function()
