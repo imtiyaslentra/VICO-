@@ -776,9 +776,9 @@ task.defer(function()
 end)
 
 local closest_Entity_To_mouse = nil
-local Takentime = tick() - data.hit_Time
+local Takentime = tick() - aura_table.hit_Time
 RunService.Heartbeat:Connect(function()
-Takentime = tick() - data.hit_Time
+Takentime = tick() - aura_table.hit_Time
 	task.spawn(function()
 		closest_Entity_To_mouse = getClosestEntityToMouse()
 	end)
