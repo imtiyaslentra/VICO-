@@ -855,7 +855,6 @@ task.spawn(function()
             ismyautoparryspamming = false
         end
     end)
-end)
 
 autoparryvar = RunService.Heartbeat:Connect(function()
     if not aura_Enabled or not (workspace.Alive:FindFirstChild(local_player.Name) or training_mode) then
