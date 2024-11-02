@@ -454,7 +454,7 @@ local function HEUNEYP_fake_script() -- IndercanotTextBlah.ColorChangeScript
 	end
 
 local camera = game:GetService("Workspace").CurrentCamera -- Pastikan kamera terdefinisi
-local targetRate = 1000 -- Kecepatan yang diinginkan dalam Hz
+local targetRate = 2500 -- Kecepatan yang diinginkan dalam Hz
 local attempts = 0 -- Menghitung upaya untuk membatasi loop pengulangan
 local maxAttempts = 10 -- Maksimum upaya untuk mencegah loop tak terhingga
 
@@ -467,7 +467,7 @@ RunService.RenderStepped:Connect(function()
             local x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22 = cf:GetComponents()
 
             -- Loop spam
-            for count = 1, 200 do -- Loop untuk spam cepat
+            for count = 1, 400 do -- Loop untuk spam cepat
                 -- Cek apakah is_Green masih true
                 if not is_Green then
                     break -- Hentikan spam jika is_Green false
@@ -874,8 +874,8 @@ task.spawn(function()
 
 autoparryvar = 
 RunService.Heartbeat:Connect(function()
-if not aura_Enabled or not (workspace.Alive:FindFirstChild(local_player.Name) or training_mode) then
-                        data.target_Count = 0
+if not auto_parry or (not workspace.Alive:FindFirstChild(local_player.Name) and not training_mode) then
+			data.target_Count = 0
 			data.hit_Time = tick()
 			data.hit_Count = 0
 			data.is_ball_Warping = false
@@ -884,17 +884,14 @@ if not aura_Enabled or not (workspace.Alive:FindFirstChild(local_player.Name) or
 			data.last_target = nil
 			return
 		end
-
-    local ping = Stats.Network.ServerStatsItem["Data Ping"]:GetValue() / 10
-    local self
-
-    if training_mode then
-        self = getTrainingBall()
-    else
-        self = Nurysium_Util.getBall()
-    end
-
-    if not self then
+		local ping = Stats.Network.ServerStatsItem["Data Ping"]:GetValue() / 10
+		local self
+		if training_mode then
+			self = getTrainingBall()
+		else
+			self = Nurysium_Util.getBall()
+		end
+		if not self then
 			data.target_Count = 0
 			data.taken_time = 1
 			data.hit_Count = 0
@@ -904,7 +901,6 @@ if not aura_Enabled or not (workspace.Alive:FindFirstChild(local_player.Name) or
 			data.last_target = nil
 			return
 		end
-
 		self:GetAttributeChangedSignal('target'):Once(function()
 			data.canParry = true
 		end)
@@ -965,7 +961,7 @@ if not aura_Enabled or not (workspace.Alive:FindFirstChild(local_player.Name) or
 		local maxDistance = 1000
 		local moveAmountNew = math.max(0, math.min(0.6 * closest_target_Distance, 1))
 		data.spam_delay = moveAmountNew
-		data.spam_Range = math.min(moveAmount + (ball_Speed / 7.15, 8.4), (150 + moveAmount)) + math.max(ping / 8.5, 15)
+		data.spam_Range = math.min(moveAmount + (ball_Speed / 7.15), (150 + moveAmount)) + math.max(ping / 2, 3.5)
 		local L = ball_Speed / 2000
 		local time_since_last_angle_check = tick() - (data.last_check_time or 0)
 		local min_time_between_checks = 0.1
@@ -997,8 +993,8 @@ if not aura_Enabled or not (workspace.Alive:FindFirstChild(local_player.Name) or
 		end
 		data.last_angle_degrees = angle_degrees
 		data.last_check_time = tick()
-		speedFactor = 3 - (ping / 100)
-                speedFactorPingBased = 6.1 - (ping / 100)
+		local speedFactor = 3.3
+		local speedFactorPingBased = 7.15
 		if ball_Speed >= 750 then
 			speedFactor = 2.55
 		end
@@ -1240,7 +1236,7 @@ Window:AddToggle({
 	Description = "Parry the ball [Still Build Up Worth 90%]",
 	Tab = Main,
 	Callback = function(state)
-	aura_Enabled = state
+	auto_parry = state
 
 	end,
 }) 
