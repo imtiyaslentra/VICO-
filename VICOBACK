@@ -101,7 +101,7 @@ end
 local aura_table = {
 	canParry = true,
 	is_Spamming = false,
-	parry_Range = 15,
+	parry_Range = 35,
 	spam_Range = 0,  
 	hit_Count = 0,
 	hit_Time = tick(),
@@ -805,7 +805,7 @@ task.spawn(function()
         end
 
         -- Proceed only if closest entity is valid and in workspace
-        if closest_Entity and workspace.Alive:FindFirstChild(closest_Entity.Name) and ((not standalone and aura_table.is_Spamming) or (standalone)) then
+        if closest_Entity and workspace.Alive:FindFirstChild(closest_Entity.Name) and aura_table.is_Spamming then
             local playerPosition = local_player.Character.PrimaryPart.Position
             local entityPosition = closest_Entity.HumanoidRootPart.Position
             local distanceToEntity = local_player:DistanceFromCharacter(entityPosition)
@@ -855,6 +855,7 @@ task.spawn(function()
             ismyautoparryspamming = false
         end
     end)
+end)
 
 autoparryvar = RunService.Heartbeat:Connect(function()
     if not aura_Enabled or not (workspace.Alive:FindFirstChild(local_player.Name) or training_mode) then
@@ -937,7 +938,7 @@ autoparryvar = RunService.Heartbeat:Connect(function()
     local target_isMoving = target_Velocity.Magnitude > 0
     local target_Dot = target_isMoving and math.max(target_Direction:Dot(target_Velocity.Unit), 0)
 
-    local direction = (player_Position - ball_Position).Unit
+local direction = (player_Position - ball_Position).Unit
 local distance = (player_Position - ball_Position).Magnitude
 local ballVelocitys = self.AssemblyLinearVelocity.Magnitude
 local Timetoreachplayer = distance / ballVelocitys
@@ -947,8 +948,8 @@ local speedFactor = 3 - (ping / 100)
 local speedFactorPingBased = 6.5 - (ping / 100)
 aura_table.parry_Range = math.max(math.max(ping, 3.5) + ball_Speed / speedFactor, speedFactorPingBased)
 
--- Pastikan `ball_Distance` dan `ball_Dot` sudah didefinisikan sebelum digunakan di bagian if
-local isInRangeForSpam = (Timetoreachplayer <= aura_table.spam_Range and ball_Distance < 13.5 and ball_Speed > 8 and ball_Velocity.Y > -50 and ball_Dot > 0.15)
+-- Implementasi logika "clash" di dalam isInRangeForSpam
+local isInRangeForSpam = (Timetoreachplayer <= 0.5 and distance < 20 and ball_Speed > 8 and ball_Velocity.Y > -50 and ball_Dot > 0.15)
 
 if target_isMoving then
     aura_table.is_Spamming = aura_table.hit_Count > 1 or isInRangeForSpam
@@ -1457,7 +1458,7 @@ Window:AddSlider({
 }) 
 
 Window:Notify({
-	Title = "Please Join Fade New Server: https://discord.com/invite/EwARkGncq4",
+	Title = "Welcome to Vico Hub, hope you like it",
 	Description = "Press Left Alt or The Image To Minimize The Window.", 
 	Duration = 10
 })
