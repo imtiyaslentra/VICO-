@@ -1,4 +1,4 @@
-print("script is load 😁👍😭")
+print("script is load 😁👍")
 wait(1)
 print("script is running wait a 1 second 💪😈")
 wait(1)
@@ -100,17 +100,15 @@ end
 
 local data = {
 	canParry = true,
-        can_spam = true,
+	modeParry = nil,
 	is_Spamming = false,
-	parry_Range = 32,
-	spam_Range = 5,  
+	parry_Range = 35,
+	spam_Range = 10,  
 	hit_Count = 0,
+	target_Count = 0,
 	hit_Time = tick(),
 	ball_Warping = tick(),
 	is_ball_Warping = false,
-	last_target = nil,
-	target_Count = 0,
-	hit_Time = tick(),
 	last_target = nil,
 	is_target = false,
 	taken_time = 1,
@@ -118,6 +116,7 @@ local data = {
 	not_target_time = tick(),
 	distance_player_to_ball = 0,
 	aero_find = false,
+	can_spam = true,
 	last_angle_degrees = 0,
 	last_ball_position = Vector3.new(0,0,0),
 	is_curving = false,
@@ -815,14 +814,13 @@ task.spawn(function()
     autospamvar = RunService.Heartbeat:Connect(function()
         -- Pre-check if auto_spam is enabled, player exists, and not in training mode
         if not auto_spam or not workspace.Alive:FindFirstChild(local_player.Name) or training_mode then
-            -- Reset aura table and spam states
-            data.hit_Count = 0
-            data.is_Spamming = false
-            data.last_target = nil
-            ismyautoparryspamming = false
-            data.spam_Range = 0
-            return
-        end
+			data.target_Count = 0
+			data.hit_Count = 0
+			data.is_Spamming = false
+                        ismyautoparryspamming = false
+			data.last_target = nil
+			return
+		end    
 
         if closest_Entity then
             if workspace.Alive:FindFirstChild(closest_Entity.Name) then
