@@ -1514,7 +1514,7 @@ local function checkSpamming()
         elseif not data.is_Spamming then
             notificationShown = false  -- Reset the flag when not spamming
         end
-        wait(0.5)  -- Wait for 1 second before checking again (adjust as needed)
+        wait(2)  -- Wait for 1 second before checking again (adjust as needed)
     end
 end
 
