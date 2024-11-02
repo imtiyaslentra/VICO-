@@ -997,8 +997,8 @@ if not aura_Enabled or not (workspace.Alive:FindFirstChild(local_player.Name) or
 		end
 		data.last_angle_degrees = angle_degrees
 		data.last_check_time = tick()
-		local speedFactor = 3.3
-		local speedFactorPingBased = 7.15
+		speedFactor = 3 - (ping / 100)
+                speedFactorPingBased = 6.1 - (ping / 100)
 		if ball_Speed >= 750 then
 			speedFactor = 2.55
 		end
