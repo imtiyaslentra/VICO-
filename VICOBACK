@@ -803,9 +803,9 @@ task.defer(function()
 end)
 
 local closest_Entity_To_mouse = nil
-local Takentime = tick() - aura_table.hit_Time
+local Takentime = tick() - data.hit_Time
 RunService.Heartbeat:Connect(function()
-Takentime = tick() - aura_table.hit_Time
+Takentime = tick() - data.hit_Time
 	task.spawn(function()
 		closest_Entity_To_mouse = getClosestEntityToMouse()
 	end)
@@ -813,7 +813,8 @@ end)
 
 
 task.spawn(function()
-    autospamvar = RunService.Heartbeat:Connect(function()
+    autospamvar =
+        RunService.Heartbeat:Connect(function()
         -- Pre-check if auto_spam is enabled, player exists, and not in training mode
         if not auto_spam or not workspace.Alive:FindFirstChild(local_player.Name) or training_mode then
 			data.target_Count = 0
