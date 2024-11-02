@@ -1,4 +1,4 @@
-print("script is load 😁👍")
+print("script is load 😁👍😭")
 wait(1)
 print("script is running wait a 1 second 💪😈")
 wait(1)
@@ -832,7 +832,7 @@ task.spawn(function()
                         task.spawn(function()
                             ismyautoparryspamming = true
                             repeat
-                                for v = 1, 50 do
+                                for v = 1, 150 do
                                     if auto_curve then
                                         originalParryRemote:FireServer(
                                             0,
@@ -965,7 +965,7 @@ if not aura_Enabled or not (workspace.Alive:FindFirstChild(local_player.Name) or
 		local maxDistance = 1000
 		local moveAmountNew = math.max(0, math.min(0.6 * closest_target_Distance, 1))
 		data.spam_delay = moveAmountNew
-		data.spam_Range = math.clamp(math.max(math.max(ping / 8.5, 15) + ball_Speed / 7.5, 8.4), 25, 1200)
+		data.spam_Range = math.min(moveAmount + (ball_Speed / 7.15, 8.4), (150 + moveAmount)) + math.max(ping / 8.5, 15)
 		local L = ball_Speed / 2000
 		local time_since_last_angle_check = tick() - (data.last_check_time or 0)
 		local min_time_between_checks = 0.1
@@ -1004,9 +1004,9 @@ if not aura_Enabled or not (workspace.Alive:FindFirstChild(local_player.Name) or
 		end
 		data.parry_Range = math.max(math.max(ping / 2, 3.5) + ball_Speed / speedFactor, speedFactorPingBased)
 		if target_isMoving then
-			data.is_Spamming = data.taken_time < (0.7 + (ping / 1000))  or (target_Distance < 12 and ball_Distance < 20) and ball_Velocity.Y > -50 and ball_Dot > 0.15
+			data.is_Spamming = data.taken_time < (0.7 + (ping / 1000))  or (target_Distance < 12 and ball_Distance < 20) and ball_Velocity.Y > -50
 		else
-			data.is_Spamming = data.taken_time < (0.7 + (ping / 1000))  or (target_Distance < 13.5 and ball_Distance < 20) and ball_Velocity.Y > -50 and ball_Dot > 0.15
+			data.is_Spamming = data.taken_time < (0.7 + (ping / 1000))  or (target_Distance < 13.5 and ball_Distance < 20) and ball_Velocity.Y > -50
 		end
 		if ball_Dot < -0.2 then
 			data.ball_Warping = tick()
