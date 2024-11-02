@@ -27,6 +27,8 @@ end
 local ismyautoparryspamming
 local local_player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
+local standalone = false
+print("Z Scripts Loading...🔃")
 
 local originalParryRemote
 local originalResolveParryRemote 
@@ -34,7 +36,7 @@ local aivar, visualizervar, autospamvar, autoparryvar, tphitvar, autowinvar
 local nurysium_Data = nil
 local hit_Sound = nil
 local closest_Entity = nil
-local auto_parry = false
+local aura_Enabled = false
 local auto_curve = false
 local auto_spam = false
 local training_mode = false
@@ -43,8 +45,7 @@ local visualize_Enabled = false
 local ai_Enabled = false
 local auto_win = false
 local tp_hit = false
-local skibidi = true
-local takentimestart = false
+local potanum = 15
 local Services = {game:GetService("AdService"),game:GetService("SocialService")}
 
 local function get_closest_entity(Object)
@@ -91,59 +92,31 @@ local function get_center()
 	end
 end
 
-local function linear_predict(a: number, b: number, time_volume: number)
-    time_volume = math.clamp(time_volume, 0, 1)
-
-    return a + (b - a) * time_volume
-end
-
-
-local data = {
+local aura_table = {
 	canParry = true,
-	modeParry = nil,
 	is_Spamming = false,
-	parry_Range = 35,
-	spam_Range = 10,  
+	parry_Range = 32,
+	spam_Range = 0,  
 	hit_Count = 0,
-	target_Count = 0,
 	hit_Time = tick(),
 	ball_Warping = tick(),
 	is_ball_Warping = false,
 	last_target = nil,
-	is_target = false,
-	taken_time = 1,
-	aero_taken_times = 0,
-	not_target_time = tick(),
-	distance_player_to_ball = 0,
-	aero_find = false,
-	can_spam = true,
-	last_angle_degrees = 0,
-	last_ball_position = Vector3.new(0,0,0),
-	is_curving = false,
-	telesink_start_time = nil,
-	is_telesinking = false,
-	pull_start_time = nil,
-	is_pulled = false,
-	last_ball_speed = 0,
-	spam_delay = 0,
-	last_check_time = 0,
 }
 
 workspace:WaitForChild("Balls").ChildRemoved:Connect(function(child)
-	data.target_Count = 0
-	data.taken_time = 1
-	data.hit_Count = 0
-	data.is_ball_Warping = false
-	data.is_Spamming = false
-	data.can_parry = true
-	data.last_target = nil
+	aura_table.hit_Count = 0
+	aura_table.is_ball_Warping = false
+	aura_table.is_Spamming = false
+	aura_table.canParry = true
+	aura_table.last_target = nil
 end)
 
 ReplicatedStorage.Remotes.ParrySuccessAll.OnClientEvent:Connect(function()
-	data.hit_Count += 1
+	aura_table.hit_Count += 1
 
 	task.delay(0.185, function()
-		data.hit_Count -= 1
+		aura_table.hit_Count -= 1
 	end)
 end)
 
@@ -815,17 +788,26 @@ end)
 task.spawn(function()
     autospamvar =
         RunService.Heartbeat:Connect(function()
-        if not auto_spam or not workspace.Alive:FindFirstChild(local_player.Name) or training_mode then
-            data.target_Count = 0
-            data.hit_Count = 0
-            data.is_Spamming = false
-            data.last_target = nil
-            return
-        end    
+            -- Pre-check if auto_spam is enabled, player exists, and not in training mode
+            if not auto_spam or not workspace.Alive:FindFirstChild(local_player.Name) or training_mode then
+                -- Reset aura table and spam states
+                aura_table.hit_Count = 0
+                aura_table.is_Spamming = false
+                aura_table.last_target = nil
+                ismyautoparryspamming = false
+                aura_table.spam_Range = 0
+                return
+            end
 
-        if closest_Entity and workspace.Alive:FindFirstChild(closest_Entity.Name) then
-            if data.is_Spamming then
-                if workspace.Alive:FindFirstChild(local_player.Name) and data.can_spam and (local_player.Character.PrimaryPart.Position - closest_Entity.HumanoidRootPart.Position).Magnitude <= data.spam_Range then
+            -- Proceed only if closest entity is valid and in workspace
+            if closest_Entity and workspace.Alive:FindFirstChild(closest_Entity.Name) and ((not standalone and aura_table.is_Spamming) or (standalone)) then
+                local playerPosition = local_player.Character.PrimaryPart.Position
+                local entityPosition = closest_Entity.HumanoidRootPart.Position
+                local distanceToEntity = local_player:DistanceFromCharacter(entityPosition)
+                
+                -- Perform spam actions only when within range
+                if distanceToEntity <= aura_table.spam_Range then
+                    ismyautoparryspamming = true
                     if camera then
                         local cf = camera.CFrame
                         local x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22 = cf:GetComponents()
@@ -863,208 +845,171 @@ task.spawn(function()
                                     )
                                 end
                             end
-                            
-                            -- Debugging statements
-                            warn("Spam Attempt:", count)
-                            warn("is_Spamming:", data.is_Spamming)
-                            warn("can_spam:", data.can_spam)
-                            warn("Spam Range:", data.spam_Range)
-                            warn("Distance to Target:", (local_player.Character.PrimaryPart.Position - closest_Entity.HumanoidRootPart.Position).Magnitude)
-                            
-                            RunService.Heartbeat:Wait()
                         end
                     end
+                else
+                    -- Reset spam state if out of range
+                    ismyautoparryspamming = false
                 end
+            else
+                -- Reset spam state if entity is not found
+                ismyautoparryspamming = false
             end
-        end
+        end)
+
+toparryvar = RunService.Heartbeat:Connect(function()
+    if not aura_Enabled or not (workspace.Alive:FindFirstChild(local_player.Name) or training_mode) then
+        aura_table.hit_Time = tick() * 10
+        aura_table.hit_Count = 0
+        aura_table.is_ball_Warping = false
+        aura_table.is_Spamming = false
+        aura_table.canParry = true
+        aura_table.last_target = nil
+        return
+    end
+
+    local ping = Stats.Network.ServerStatsItem["Data Ping"]:GetValue() / 10
+    local self
+
+    if training_mode then
+        self = getTrainingBall()
+    else
+        self = Nurysium_Util.getBall()
+    end
+
+    if not self then
+        aura_table.hit_Time = tick() * 10
+        aura_table.hit_Count = 0
+        aura_table.is_ball_Warping = false
+        aura_table.is_Spamming = false
+        aura_table.canParry = true
+        aura_table.last_target = nil
+        return
+    end
+
+    self:GetAttributeChangedSignal('target'):Once(function()
+        aura_table.canParry = true
     end)
 
-autoparryvar = 
-RunService.Heartbeat:Connect(function()
-if not auto_parry or (not workspace.Alive:FindFirstChild(local_player.Name) and not training_mode) then
-			data.target_Count = 0
-			data.hit_Time = tick()
-			data.hit_Count = 0
-			data.is_ball_Warping = false
-			data.is_Spamming = false
-			data.canParry = true
-			data.last_target = nil
-			return
-		end
-		local ping = Stats.Network.ServerStatsItem["Data Ping"]:GetValue() / 10
-		local self
-		if training_mode then
-			self = getTrainingBall()
-		else
-			self = Nurysium_Util.getBall()
-		end
-		if not self then
-			data.target_Count = 0
-			data.taken_time = 1
-			data.hit_Count = 0
-			data.is_ball_Warping = false
-			data.is_Spamming = false
-			data.canParry = true
-			data.last_target = nil
-			return
-		end
-		self:GetAttributeChangedSignal('target'):Once(function()
-			data.canParry = true
-		end)
-		if self:GetAttribute('target') == local_player.Name and skibidi then
-			data.target_Count = data.target_Count + 1
-			skibidi = false
-		elseif self:GetAttribute('target') ~= local_player.Name then
-			skibidi = true
-		end
-		task.delay(0.2 + (ping / 100),function()
-			data.target_Count = data.target_Count - 1
-		end)
-		self:GetAttributeChangedSignal('from'):Once(function()
-			data.last_target = workspace.Alive:FindFirstChild(self:GetAttribute('from'))
-		end)
-		get_closest_entity(local_player.Character.PrimaryPart)
-		local player_Position = local_player.Character.PrimaryPart.Position
-		local ball_Position = self.Position
-		local ball_Velocity = self.AssemblyLinearVelocity
-		if self:FindFirstChild("zoomies") then
-			ball_Velocity = self.zoomies.VectorVelocity
-		end
-		local ball_Direction = (local_player.Character.PrimaryPart.Position - ball_Position).Unit
-		local ball_Distance = (local_player.Character.PrimaryPart.Position - ball_Position).Magnitude
-		local target_ball_distance = (closest_Entity.HumanoidRootPart.Position - ball_Position).Magnitude
-		data.distance_player_to_ball = ball_Distance
-		local ball_DirectionNew
-		local ball_DistanceNew
-		local targetPosition = (self:GetAttribute('target') == local_player.Name and local_player.Character.PrimaryPart.Position or closest_Entity.HumanoidRootPart.Position)
-		ball_DirectionNew = (targetPosition - ball_Position).Unit
-		ball_DistanceNew = (targetPosition - ball_Position).Magnitude
-		local ball_Dot = ball_Direction:Dot(ball_Velocity.Unit)
-		ball_Dot = math.clamp(ball_Dot, -1, 1)
-		local ball_Dot_New = ball_DirectionNew:Dot(ball_Velocity.Unit)
-		local ball_Speed = ball_Velocity.Magnitude
-		local player_Position = local_player.Character.PrimaryPart.Position
-		local player_Dir = (local_player.Character.PrimaryPart.Position - closest_Entity.HumanoidRootPart.Position).Unit
-		local player_Velocity = local_player.Character.HumanoidRootPart.AssemblyLinearVelocity
-		local player_isMoving = player_Velocity.Magnitude > 0
-		local player_dot = player_isMoving and math.max(player_Dir:Dot(player_Velocity.Unit), 0)
-		local ball_speed_Limited = math.min(ball_Speed / 1000, 0.1)
-		local ball_predicted_Distance = (ball_Distance - ping / 15.5) - (ball_Speed / 3.5)
-		local ball_predicted_Distance_target = (target_ball_distance - ping / 15.5) - (ball_Speed / 3.5)
-		local predictionTime = 0.25 + (ping / 100)
-		local ball_PredictedPosition = ball_Position + (ball_Velocity * predictionTime)
-		local ball_PredictedDistance = (local_player.Character.PrimaryPart.Position - ball_PredictedPosition).Magnitude 
-		local target_Position = closest_Entity.HumanoidRootPart.Position
-		local target_Distance = local_player:DistanceFromCharacter(target_Position)
-		local closest_target_Distance = local_player:DistanceFromCharacter(closest_Entity.HumanoidRootPart.Position)
-		local target_distance_Limited = math.min(target_Distance / 10000, 0.1)
-		local target_Direction = (local_player.Character.PrimaryPart.Position - closest_Entity.HumanoidRootPart.Position).Unit
-		local target_Ball_Distance = (targetPosition - ball_Position).Magnitude
-		local target_Velocity = closest_Entity.HumanoidRootPart.AssemblyLinearVelocity
-		local target_isMoving = target_Velocity.Magnitude > 0
-		local target_Dot = target_isMoving and math.max(target_Direction:Dot(target_Velocity.Unit), 0)
-		local baseMoveAmount = 0.5
-		local moveAmount = baseMoveAmount * (1 / (closest_target_Distance + 0.01)) * 1000
-		local maxDistance = 1000
-		local moveAmountNew = math.max(0, math.min(0.6 * closest_target_Distance, 1))
-		data.spam_delay = moveAmountNew
-		data.spam_Range = math.min(moveAmount + (ball_Speed / 7.15), (150 + moveAmount)) + math.max(ping / 2, 3.5)
-		local L = ball_Speed / 2000
-		local time_since_last_angle_check = tick() - (data.last_check_time or 0)
-		local min_time_between_checks = 0.1
-		local angle_degrees = math.deg(math.acos(ball_Dot_New))
-		local ball_is_target
-		ball_is_target = self:GetAttribute('target') == local_player.Name
-		local previous_angle_degrees = data.last_angle_degrees or angle_degrees
-		local delta_angle = math.abs(previous_angle_degrees - angle_degrees)
-		if target_Distance <= data.spam_Range then
-			takentimestart = true
-		elseif target_Distance >= data.spam_Range + 7.5 then
-			takentimestart = false
-			data.taken_time = 1
-		end
-		data.can_spam = true
-		local curve = (1 - ball_Dot_New) / 2
-		local num = 6.25 - (ping / 10)
-		if ball_Speed >= 250 then
-		num = 12.5 - (ping / 10)
-		elseif ball_Speed >= 500 then
-		num = 25 - (ping / 10)
-		elseif ball_Speed >= 750 then
-		num = 50 - (ping / 10)
-		end
-		if delta_angle > 31 + (ball_Speed / num) then
-			data.can_spam = false
-		else
-			data.can_spam = true
-		end
-		data.last_angle_degrees = angle_degrees
-		data.last_check_time = tick()
-		local speedFactor = 3.4
-		local speedFactorPingBased = 7.25
-		if ball_Speed >= 750 then
-			speedFactor = 2.50
-		end
-		data.parry_Range = math.max(math.max(ping / 2, 3.5) + ball_Speed / speedFactor, speedFactorPingBased)
-		if target_isMoving then
-			data.is_Spamming = data.taken_time < (0.7 + (ping / 1000))  or (target_Distance < 12 and ball_Distance < 20) and ball_Velocity.Y > -50
-		else
-			data.is_Spamming = data.taken_time < (0.7 + (ping / 1000))  or (target_Distance < 13.5 and ball_Distance < 20) and ball_Velocity.Y > -50
-		end
-		if ball_Dot < -0.2 then
-			data.ball_Warping = tick()
-		end
-		task.spawn(function()
-			if (tick() - data.ball_Warping) >= 0.15 + target_distance_Limited - ball_speed_Limited or ball_Distance <= 10 then
-				data.is_ball_Warping = false
-				return
-			end
-			if data.last_target then
-				if (ball_Position - data.last_target.HumanoidRootPart.Position).Magnitude > 35.5 or target_Distance <= 12 then
-					data.is_ball_Warping = false
-				end
-			end
-			data.is_ball_Warping = true
-		end)
-		if ball_Velocity.Y < -200 and self:FindFirstChild("AeroDynamicSlash") then
-			data.aero_find = true
-			data.parry_Range /= 2
-		else
-			data.aero_find = false
-		end
-		if not ball_is_target or not data.canParry then
-			return
-		end
-		local ping_based_ball_distance
-		if Stats.Network.ServerStatsItem["Data Ping"]:GetValue() > 150 and ball_predicted_Distance or ball_Distance then
-			ping_based_ball_distance = ball_predicted_Distance
-		else
-			ping_based_ball_distance = ball_Distance
-		end
-		if (ping_based_ball_distance <= data.parry_Range) and not data.is_ball_Warping and delta_angle < 31 and angle_degrees < 69 then		
-			local cf = camera.CFrame
-			local x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22 = cf:GetComponents()
-			originalParryRemote:FireServer(
-				0,
-				CFrame.new(x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22),
-				{[closest_Entity_To_mouse.Name] = closest_Entity_To_mouse.HumanoidRootPart.Position},
-				{closest_Entity_To_mouse.HumanoidRootPart.Position.X, closest_Entity_To_mouse.HumanoidRootPart.Position.Y},
-				false
-			)
-			data.hit_Count = data.hit_Count + 1
-			task.delay(0.2 + (ping / 100), function()
-				data.hit_Count = data.hit_Count - 1
-			end)
-			data.hit_Time = tick()
-			data.canParry = false
-		end
-		task.spawn(function()
-			repeat
-				RunService.Heartbeat:Wait()
-			until (tick() - data.hit_Time) >= 1
-			data.canParry = true
-		end)
-	end)
+    if self:GetAttribute('target') ~= local_player.Name or not aura_table.canParry then
+        return
+    end
+
+    self:GetAttributeChangedSignal('from'):Once(function()
+        aura_table.last_target = workspace.Alive:FindFirstChild(self:GetAttribute('from'))
+    end)
+
+    get_closest_entity(local_player.Character.PrimaryPart)
+
+    local player_Position = local_player.Character.PrimaryPart.Position
+    local ball_Position = self.Position
+    local ball_Velocity = self.AssemblyLinearVelocity
+
+    if self:FindFirstChild("zoomies") then
+        ball_Velocity = self.zoomies.VectorVelocity
+    end
+
+    local ball_Direction = (local_player.Character.PrimaryPart.Position - ball_Position).Unit
+    local ball_Distance = (local_player.Character.PrimaryPart.Position - ball_Position).Magnitude
+    local ball_Dot = ball_Direction:Dot(ball_Velocity.Unit)
+    local ball_Speed = ball_Velocity.Magnitude
+
+    -- Anti-curve mechanism: Adjust for curving velocity
+    if ball_Speed < 25 or ball_Velocity.Y > 10 then
+        aura_table.hit_Time = tick() * 10
+        aura_table.hit_Count = 0
+        aura_table.is_ball_Warping = false
+        aura_table.is_Spamming = false
+        aura_table.can_parry = true
+        aura_table.last_target = nil
+    end
+
+    local player_Velocity = local_player.Character.HumanoidRootPart.AssemblyLinearVelocity
+    local player_isMoving = player_Velocity.Magnitude > 0
+    local ball_speed_Limited = math.min(ball_Speed / 1000, 0.1)
+    local ball_predicted_Distance = (ball_Distance - ping / 15.3) - (ball_Speed / 3.5)
+
+    local targetPosition = closest_Entity_To_mouse.HumanoidRootPart.Position
+    local target_Distance = local_player:DistanceFromCharacter(targetPosition)
+    local closest_target_Distance = local_player:DistanceFromCharacter(closest_Entity.HumanoidRootPart.Position)
+    local target_distance_Limited = math.min(target_Distance / 10000, 0.1)
+    local target_Direction = (local_player.Character.PrimaryPart.Position - closest_Entity.HumanoidRootPart.Position).Unit
+    local target_Velocity = closest_Entity.HumanoidRootPart.AssemblyLinearVelocity
+    local target_isMoving = target_Velocity.Magnitude > 0
+    local target_Dot = target_isMoving and math.max(target_Direction:Dot(target_Velocity.Unit), 0)
+
+    aura_table.spam_Range = math.clamp(math.max(math.max(ping / 8.5, 15) + ball_Speed / 7.5, 8.4), 25, 1200)
+    speedFactor = 3 - (ping / 100)
+    speedFactorPingBased = 6.1 - (ping / 100)
+    aura_table.parry_Range = math.max(math.max(ping, 3.5) + ball_Speed / speedFactor, speedFactorPingBased)
+
+    if target_isMoving then
+        aura_table.is_Spamming = aura_table.hit_Count > 1 or (target_Distance <= aura_table.spam_Range and ball_Distance < 18 and ball_Speed > 8) and ball_Velocity.Y > -50 and ball_Dot > 0.15
+    else
+        aura_table.is_Spamming = aura_table.hit_Count > 1 or (target_Distance <= aura_table.spam_Range and ball_Distance < 18 and ball_Speed > 8) and ball_Velocity.Y > -50 and ball_Dot > 0.15
+    end
+
+    local velocity_angle = math.abs(math.acos(ball_Direction:Dot(ball_Velocity.Unit)))
+
+    if ball_Dot < -0.2 then
+        aura_table.ball_Warping = tick()
+    end
+
+    task.spawn(function()
+        if (tick() - aura_table.ball_Warping) >= 0.15 + target_distance_Limited - ball_speed_Limited or ball_Distance <= 10 then
+            aura_table.is_ball_Warping = false
+            return
+        end
+
+        if aura_table.last_target then
+            if (ball_Position - aura_table.last_target.HumanoidRootPart.Position).Magnitude > 35.5 or target_Distance <= 12 then
+                aura_table.is_ball_Warping = false
+            end
+        end
+
+        aura_table.is_ball_Warping = true
+    end)
+
+    if ball_Distance <= aura_table.parry_Range and not aura_table.is_ball_Warping and ball_Speed > 0 and ball_Dot > 0.1 then
+        local cf = camera.CFrame
+        local target_X = targetPosition.X
+        local target_Y = targetPosition.Y
+
+        if auto_curve then
+            originalParryRemote:FireServer(
+                0,
+                CFrame.new(cf.Position, Vector3.new(math.random(-1000, 1000), math.random(0, 1000), math.random(100, 1000))),
+                {[closest_Entity_To_mouse.Name] = targetPosition},
+                {target_X, target_Y},
+                false
+            )
+        else
+            local x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22 = cf:GetComponents()
+            originalParryRemote:FireServer(
+                0,
+                CFrame.new(x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22),
+                {[closest_Entity_To_mouse.Name] = targetPosition},
+                {target_X, target_Y},
+                false
+            )
+        end
+
+        aura_table.hit_Count = aura_table.hit_Count + 1
+        task.delay(0.55 + (ping / 100), function()
+            aura_table.hit_Count = aura_table.hit_Count - 1
+        end)
+
+        aura_table.hit_Time = tick()
+        aura_table.canParry = false
+    end
+
+    task.spawn(function()
+        repeat
+            RunService.PreRender:Wait()
+        until (tick() - aura_table.hit_Time) >= 1
+        aura_table.canParry = true
+    end)
+end)
 end)
 
 -- Define a safe disconnect function to avoid errors
@@ -1243,7 +1188,7 @@ Window:AddToggle({
 	Description = "Parry the ball [Still Build Up Worth 90%]",
 	Tab = Main,
 	Callback = function(state)
-	auto_parry = state
+	aura_Enabled = state
 
 	end,
 }) 
@@ -1290,7 +1235,16 @@ Window:AddSection({ Name = "Misc", Tab = Main })
 	Callback = function(state)
 anti_curve_spam_Enabled = state
 	end,
-})				
+})
+
+Window:AddToggle({
+	Title = "Standalone Mode",
+	Description = "It Increase The Auto Spam Sensitivity",
+	Tab = Main,
+	Callback = function(state)
+standalone = state
+	end,
+})		
 
 				Window:AddSection({ Name = "Autofarms", Tab = Main }) 
 	
@@ -1502,22 +1456,22 @@ Window:Notify({
 	Description = "Press Left Alt or The Image To Minimize The Window.", 
 	Duration = 10
 })
-local notificationShown = false  -- Flag to track if the notification has been shown
+local notificationShown = true  -- Flag to track if the notification has been shown
 
--- Function to repeatedly check if ismyautoparryspamming
+-- Function to repeatedly check if aura_table.is_Spamming
 local function checkSpamming()
     while true do  -- Infinite loop to keep checking
         if ismyautoparryspamming and not notificationShown then
             Window:Notify({
-                Title = "Active spam seems to be detected",
-                Description = "Spam has been activated. If spam activates itself when approaching, just stay away from it for protection.", 
-                Duration = 4
+                Title = "Is Now Spamming",
+                Description = "Spamming has been detected ", 
+                Duration = 3
             })
             notificationShown = true  -- Set the flag to true after showing the notification
-        elseif not ismyautoparryspamming and notificationShown then
-            notificationShown = false  -- Reset the flag when spamming stops
+        elseif not aura_table.is_Spamming then
+            notificationShown = false  -- Reset the flag when not spamming
         end
-        wait(2)  -- Wait for 2 seconds before checking again (adjust as needed)
+        wait(1)  -- Wait for 1 second before checking again (adjust as needed)
     end
 end
 
