@@ -1,6 +1,6 @@
-print("script is load 😁")
+print("script is load 😁👍")
 wait(1)
-print("script is running wait a 1 second 😈")
+print("script is running wait a 1 second 💪😈")
 wait(1)
 print("dont be sigma because you sigma 🧏, Nguwawor loh ya")
 wait(1)
@@ -947,8 +947,6 @@ autoparryvar = RunService.Heartbeat:Connect(function()
         end)
     end)
 end)
-
-initializate('nurysium_temp')
 
 -- Define a safe disconnect function to avoid errors
 local function safeDisconnect(connection)
