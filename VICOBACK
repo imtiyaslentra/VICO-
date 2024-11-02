@@ -1000,10 +1000,10 @@ if not auto_parry or (not workspace.Alive:FindFirstChild(local_player.Name) and 
 		end
 		data.last_angle_degrees = angle_degrees
 		data.last_check_time = tick()
-		local speedFactor = 3.3
-		local speedFactorPingBased = 7.15
+		local speedFactor = 3.4
+		local speedFactorPingBased = 7.25
 		if ball_Speed >= 750 then
-			speedFactor = 2.55
+			speedFactor = 2.50
 		end
 		data.parry_Range = math.max(math.max(ping / 2, 3.5) + ball_Speed / speedFactor, speedFactorPingBased)
 		if target_isMoving then
