@@ -101,7 +101,7 @@ end
 local aura_table = {
 	canParry = true,
 	is_Spamming = false,
-	parry_Range = 35,
+	parry_Range = 45,
 	spam_Range = 0,  
 	hit_Count = 0,
 	hit_Time = tick(),
@@ -943,9 +943,9 @@ local ballVelocitys = self.AssemblyLinearVelocity.Magnitude
 local Timetoreachplayer = distance / ballVelocitys
 
 aura_table.spam_Range = math.clamp(math.max(math.max(ping / 8.5, 15) + ball_Speed / 7.5, 8.4), 25, 1200)
-local speedFactor = 3 - (ping / 100)
-local speedFactorPingBased = 6.5 - (ping / 100)
-aura_table.parry_Range = math.max(math.max(ping, 3.5) + ball_Speed / speedFactor, speedFactorPingBased)
+speedFactor = 3 - (ping / 100)
+    speedFactorPingBased = 6.1 - (ping / 100)
+    aura_table.parry_Range = math.max(math.max(ping, 3.5) + ball_Speed / speedFactor, speedFactorPingBased)
 
 -- Implementasi logika "clash" di dalam isInRangeForSpam
 local isInRangeForSpam = (Timetoreachplayer <= 0.5 and distance < 20 and ball_Speed > 8 and ball_Velocity.Y > -50 and ball_Dot > 0.15)
