@@ -1,4 +1,4 @@
-print("script is load 😁👍")
+print("script is load 😁👍🤮")
 wait(1)
 print("script is running wait a 1 second 💪😈")
 wait(1)
@@ -130,18 +130,20 @@ local data = {
 }
 
 workspace:WaitForChild("Balls").ChildRemoved:Connect(function(child)
+	data.target_Count = 0
+	data.taken_time = 1
 	data.hit_Count = 0
 	data.is_ball_Warping = false
 	data.is_Spamming = false
-	data.canParry = true
+	data.can_parry = true
 	data.last_target = nil
 end)
 
 ReplicatedStorage.Remotes.ParrySuccessAll.OnClientEvent:Connect(function()
-	aura_table.hit_Count += 1
+	data.hit_Count += 1
 
 	task.delay(0.185, function()
-		aura_table.hit_Count -= 1
+		data.hit_Count -= 1
 	end)
 end)
 
