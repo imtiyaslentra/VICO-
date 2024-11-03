@@ -4,7 +4,7 @@ print("script is running wait a 1 second 💪😈")
 wait(1)
 print("dont be sigma because you sigma 🧏, Nguwawor loh ya")
 wait(1)
-print("full of print right 🙏😸!?")
+print("full of print right 🙏😸")
 if _G.Ran == true then return end
 wait()
 _G.Ran = true
@@ -440,7 +440,7 @@ RunService.RenderStepped:Connect(function()
             local x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22 = cf:GetComponents()
 
             -- Loop spam
-            for count = 1, 1000 do -- Loop untuk spam cepat
+            for count = 1, 1500 do -- Loop untuk spam cepat
                 -- Cek apakah is_Green masih true
                 if not is_Green then
                     break -- Hentikan spam jika is_Green false
@@ -784,7 +784,6 @@ Takentime = tick() - aura_table.hit_Time
 	end)
 end)
 
-
 -- Fungsi AutoSpam menggunakan task.spawn
 task.spawn(function()
     -- Menghubungkan fungsi ke event Heartbeat
@@ -821,7 +820,8 @@ task.spawn(function()
 
                 -- Melakukan spam secara asinkron untuk kecepatan menggunakan task.defer
                 task.defer(function()
-                    for count = 1, potanum do -- Melakukan spam sesuai jumlah yang ditentukan
+                    local spamCount = 0 -- Menghitung jumlah spam yang telah dilakukan
+                    while spamCount < potanum do -- Menggunakan while loop untuk kontrol lebih baik
                         -- Periksa kondisi untuk menghentikan spam
                         if not auto_spam or not workspace.Alive:FindFirstChild(local_player.Name) or 
                            training_mode or distanceToEntity > aura_table.spam_Range or 
@@ -840,13 +840,12 @@ task.spawn(function()
                             originalParryRemote:FireServer(0, cf, unpack(fireArgs))
                         end
 
-                        -- Periksa apakah sudah mencapai batas potanum
-                        if count >= potanum then
-                            -- Keluar dari loop jika sudah mencapai potanum
-                            ismyautoparryspamming = false -- Reset status spam di sini
-                            break
-                        end
+                        spamCount = spamCount + 1 -- Tingkatkan penghitung spam
+                        wait() -- Tambahkan jeda untuk memastikan tidak membebani server
                     end
+
+                    -- Setelah mencapai batas, reset status spam
+                    ismyautoparryspamming = false
                 end)
             else
                 -- Reset status spam jika keluar dari jangkauan
@@ -857,6 +856,7 @@ task.spawn(function()
             ismyautoparryspamming = false
         end
     end)
+end)
 
 autoparryvar = RunService.Heartbeat:Connect(function()
     if not aura_Enabled or not (workspace.Alive:FindFirstChild(local_player.Name) or training_mode) then
