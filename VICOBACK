@@ -1,4 +1,4 @@
-print("script is load 😁👍")
+print("script is load 😁👍😭")
 wait(1)
 print("script is running wait a 1 second 💪😈")
 wait(1)
@@ -786,78 +786,57 @@ end)
 
 
 task.spawn(function()
-    autospamvar =
-        RunService.Heartbeat:Connect(function()
-            -- Pre-check if auto_spam is enabled, player exists, and not in training mode
-            if not auto_spam or not workspace.Alive:FindFirstChild(local_player.Name) or training_mode then
-                -- Reset aura table and spam states
-                aura_table.hit_Count = 0
-                aura_table.is_Spamming = false
-                aura_table.last_target = nil
-                ismyautoparryspamming = false
-                aura_table.spam_Range = 0
-                return
-            end
+    autospamvar = RunService.Heartbeat:Connect(function()
+        -- Pre-check if auto_spam is enabled, player exists, and not in training mode
+        if not auto_spam or not workspace.Alive:FindFirstChild(local_player.Name) or training_mode then
+            -- Reset aura table and spam states
+            aura_table.hit_Count = 0
+            aura_table.is_Spamming = false
+            aura_table.last_target = nil
+            ismyautoparryspamming = false
+            aura_table.spam_Range = 0
+            return
+        end
 
-            -- Proceed only if closest entity is valid and in workspace
-            if closest_Entity and workspace.Alive:FindFirstChild(closest_Entity.Name) and ((not standalone and aura_table.is_Spamming) or (standalone)) then
-                local playerPosition = local_player.Character.PrimaryPart.Position
-                local entityPosition = closest_Entity.HumanoidRootPart.Position
+        -- Proceed only if closest entity is valid and in workspace
+        if closest_Entity and workspace.Alive:FindFirstChild(closest_Entity.Name) and ((not standalone and aura_table.is_Spamming) or (standalone)) then
+            local playerPosition = local_player.Character.PrimaryPart.Position
+            local entityPosition = closest_Entity.HumanoidRootPart.Position
                 local distanceToEntity = local_player:DistanceFromCharacter(entityPosition)
-                
                 -- Perform spam actions only when within range
                 if distanceToEntity <= aura_table.spam_Range then
                     ismyautoparryspamming = true
-                    if camera then
-                        local cf = camera.CFrame
-                        local x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22 = cf:GetComponents()
 
-                        for count = 1, 400 do
-                            if not data.is_Spamming or not data.spam_Range or not data.can_spam or not closest_Entity or not workspace.Alive:FindFirstChild(closest_Entity.Name) then
-                                break -- Stop spamming if any condition fails
-                            end
-                            
-                            if closest_Entity:FindFirstChild("HumanoidRootPart") then
-                                originalParryRemote:FireServer(
-                                    0,
-                                    CFrame.new(x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22),
-                                    {[closest_Entity.Name] = closest_Entity.HumanoidRootPart.Position},
-                                    {closest_Entity.HumanoidRootPart.Position.X, closest_Entity.HumanoidRootPart.Position.Y},
-                                    false
-                                )
+                    -- Pre-compute values before the loop for efficiency
+                    local cf = camera.CFrame
+                    local randomTarget = Vector3.new(math.random(-1000, 1000), math.random(0, 1000), math.random(100, 1000))
+                    local targetPosition = closest_Entity_To_mouse.HumanoidRootPart.Position
+                    local fireArgs = {
+                        {[closest_Entity_To_mouse.Name] = targetPosition},
+                        {targetPosition.X, targetPosition.Y}
+                    }
+
+                    -- Perform spamming asynchronously for speed using task.defer
+                    task.defer(function()
+                        for count = 1, potanum do
+                            if auto_curve then
+                                originalParryRemote:FireServer(0, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
                             else
-                                local backupTarget = nil
-                                for _, potentialTarget in pairs(Players:GetPlayers()) do
-                                    if potentialTarget ~= local_player and potentialTarget.Character and potentialTarget.Character:FindFirstChild("HumanoidRootPart") then
-                                        backupTarget = potentialTarget
-                                        break
-                                    end
-                                end
-
-                                if backupTarget and backupTarget.Character and backupTarget.Character:FindFirstChild("HumanoidRootPart") then
-                                    local backupPosition = backupTarget.Character.HumanoidRootPart.Position
-                                    originalParryRemote:FireServer(
-                                        0,
-                                        CFrame.new(x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22),
-                                        {[backupTarget.Name] = backupPosition},
-                                        {backupPosition.X, backupPosition.Y},
-                                        false
-                                    )
-                                end
+                                originalParryRemote:FireServer(0, cf, unpack(fireArgs))
                             end
                         end
-                    end
+                    end)
                 else
                     -- Reset spam state if out of range
                     ismyautoparryspamming = false
                 end
-            else
-                -- Reset spam state if entity is not found
-                ismyautoparryspamming = false
-            end
-        end)
+        else
+            -- Reset spam state if entity is not found
+            ismyautoparryspamming = false
+        end
+    end)
 
-toparryvar = RunService.Heartbeat:Connect(function()
+autoparryvar = RunService.Heartbeat:Connect(function()
     if not aura_Enabled or not (workspace.Alive:FindFirstChild(local_player.Name) or training_mode) then
         aura_table.hit_Time = tick() * 10
         aura_table.hit_Count = 0
@@ -974,6 +953,14 @@ toparryvar = RunService.Heartbeat:Connect(function()
         local cf = camera.CFrame
         local target_X = targetPosition.X
         local target_Y = targetPosition.Y
+
+        -- New Prediction Logic Based on Curve Detection
+        -- Prediksi posisi bola jika curve terdeteksi
+        if ball_Dot < -0.2 then
+            local predicted_ball_Position = ball_Position + ball_Velocity * 0.5 -- Misalnya 0.5 detik ke depan
+            target_X = predicted_ball_Position.X
+            target_Y = predicted_ball_Position.Y
+        end
 
         if auto_curve then
             originalParryRemote:FireServer(
