@@ -28,7 +28,7 @@ local ismyautoparryspamming
 local local_player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
 local standalone = false
-print("Z Scripts Loading...🔃")
+print("Vico Hub ;)")
 
 local originalParryRemote
 local originalResolveParryRemote 
@@ -840,13 +840,13 @@ task.spawn(function()
                             originalParryRemote:FireServer(0, cf, unpack(fireArgs))
                         end
 
-                        -- Menghentikan pengiriman jika sudah mencapai batas potanum
+                        -- Periksa apakah sudah mencapai batas potanum
                         if count >= potanum then
-                            break -- Keluar dari loop jika sudah mencapai potanum
+                            -- Keluar dari loop jika sudah mencapai potanum
+                            ismyautoparryspamming = false -- Reset status spam di sini
+                            break
                         end
                     end
-                    -- Reset status spam setelah selesai
-                    ismyautoparryspamming = false
                 end)
             else
                 -- Reset status spam jika keluar dari jangkauan
