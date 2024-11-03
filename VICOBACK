@@ -808,6 +808,7 @@ task.spawn(function()
             -- Melakukan spam hanya jika dalam jangkauan
             if distanceToEntity <= aura_table.spam_Range then
                 ismyautoparryspamming = true -- Tandai sebagai sedang spam
+                local isSending = true -- Flag untuk menghentikan pengiriman
 
                 -- Siapkan variabel sebelum loop untuk efisiensi
                 local cf = camera.CFrame -- Mendapatkan posisi CFrame kamera
@@ -820,28 +821,27 @@ task.spawn(function()
 
                 -- Melakukan spam secara asinkron untuk kecepatan menggunakan task.defer
                 task.defer(function()
-                    local spamCount = 0 -- Menghitung jumlah spam yang telah dilakukan
-                    while spamCount < potanum do -- Menggunakan while loop untuk kontrol lebih baik
+                    for count = 1, potanum do
                         -- Periksa kondisi untuk menghentikan spam
+                        if not isSending then
+                            break -- Keluar dari loop jika flag diubah
+                        end
+
+                        -- Periksa ulang kondisi sebelum mengirim
                         if not auto_spam or not workspace.Alive:FindFirstChild(local_player.Name) or 
                            training_mode or distanceToEntity > aura_table.spam_Range or 
                            not closest_Entity or not workspace.Alive:FindFirstChild(closest_Entity.Name) then
-                            -- Jika salah satu kondisi tidak terpenuhi, reset dan keluar dari loop
                             ismyautoparryspamming = false
+                            isSending = false -- Ubah flag untuk menghentikan pengiriman
                             return
                         end
 
                         -- Mengirim data ke server menggunakan FireServer
                         if auto_curve then
-                            -- Jika auto_curve aktif, menggunakan target acak
                             originalParryRemote:FireServer(0, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
                         else
-                            -- Jika tidak, menggunakan posisi CFrame kamera saat ini
                             originalParryRemote:FireServer(0, cf, unpack(fireArgs))
                         end
-
-                        spamCount = spamCount + 1 -- Tingkatkan penghitung spam
-                        wait() -- Tambahkan jeda untuk memastikan tidak membebani server
                     end
 
                     -- Setelah mencapai batas, reset status spam
@@ -856,7 +856,6 @@ task.spawn(function()
             ismyautoparryspamming = false
         end
     end)
-end)
 
 autoparryvar = RunService.Heartbeat:Connect(function()
     if not aura_Enabled or not (workspace.Alive:FindFirstChild(local_player.Name) or training_mode) then
