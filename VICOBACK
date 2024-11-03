@@ -811,38 +811,49 @@ task.spawn(function()
                 }
 
                 task.defer(function()
-                    local count = 0
-                    local limit = potanum
-                    while count < limit do
-                        -- Periksa kondisi sebelum mengirim data
-                        if not auto_spam or not workspace.Alive:FindFirstChild(local_player.Name) or 
-                           training_mode or distanceToEntity > aura_table.spam_Range or 
-                           not closest_Entity or not workspace.Alive:FindFirstChild(closest_Entity.Name) then
-                            ismyautoparryspamming = false
-                            return -- Keluar dari function untuk menghentikan pengiriman
-                        end
-
-                        -- Kirim data ke server
-                        if auto_curve then
-                            originalParryRemote:FireServer(0, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
-                        else
-                            originalParryRemote:FireServer(0, cf, unpack(fireArgs))
-                        end
-
-                        count = count + 1 -- Tingkatkan hitungan
-                        task.wait(0.1) -- Jeda untuk mengurangi beban
-                    end
-
-                    -- Reset status spam setelah mencapai batas
-                    ismyautoparryspamming = false
-                end)
-            else
-                ismyautoparryspamming = false
-            end
-        else
-            ismyautoparryspamming = false
+    local isSending = true -- Variabel untuk kontrol pengiriman
+    for count = 1, potanum do
+        -- Periksa kondisi untuk menghentikan spam
+        if not auto_spam or 
+           not workspace.Alive:FindFirstChild(local_player.Name) or 
+           training_mode or 
+           not closest_Entity or 
+           not workspace.Alive:FindFirstChild(closest_Entity.Name) then
+            isSending = false -- Set flag menjadi false jika kondisi tidak terpenuhi
+            break -- Keluar dari loop
         end
-    end)
+        
+        -- Hitung jarak untuk memastikan dalam jangkauan
+        local distanceToEntity = local_player:DistanceFromCharacter(closest_Entity.HumanoidRootPart.Position)
+
+        -- Cek apakah jarak valid untuk pengiriman
+        if distanceToEntity <= aura_table.spam_Range then
+            -- Kirim data jika dalam jangkauan
+            local cf = camera.CFrame
+            local randomTarget = Vector3.new(math.random(-1000, 1000), math.random(0, 1000), math.random(100, 1000))
+            local targetPosition = closest_Entity_To_mouse.HumanoidRootPart.Position
+            local fireArgs = {
+                {[closest_Entity_To_mouse.Name] = targetPosition},
+                {targetPosition.X, targetPosition.Y}
+            }
+
+            -- Kirim data ke server
+            if auto_curve then
+                originalParryRemote:FireServer(0, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
+            else
+                originalParryRemote:FireServer(0, cf, unpack(fireArgs))
+            end
+        end
+        
+        -- Jeda untuk mencegah pengiriman berlebihan
+        task.wait(0.1)
+    end
+
+    -- Setelah loop, reset status spam
+    if not isSending then
+        ismyautoparryspamming = false -- Set status spamming
+    end
+end)
 
 autoparryvar = RunService.Heartbeat:Connect(function()
     if not aura_Enabled or not (workspace.Alive:FindFirstChild(local_player.Name) or training_mode) then
