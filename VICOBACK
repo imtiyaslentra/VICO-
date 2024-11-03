@@ -822,12 +822,7 @@ task.spawn(function()
                 -- Melakukan spam secara asinkron untuk kecepatan menggunakan task.defer
                 task.defer(function()
                     for count = 1, potanum do
-                        -- Periksa kondisi untuk menghentikan spam
-                        if not isSending then
-                            break -- Keluar dari loop jika flag diubah
-                        end
-
-                        -- Periksa ulang kondisi sebelum mengirim
+                        -- Periksa kondisi sebelum mengirim data
                         if not auto_spam or not workspace.Alive:FindFirstChild(local_player.Name) or 
                            training_mode or distanceToEntity > aura_table.spam_Range or 
                            not closest_Entity or not workspace.Alive:FindFirstChild(closest_Entity.Name) then
@@ -836,11 +831,13 @@ task.spawn(function()
                             return
                         end
 
-                        -- Mengirim data ke server menggunakan FireServer
-                        if auto_curve then
-                            originalParryRemote:FireServer(0, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
-                        else
-                            originalParryRemote:FireServer(0, cf, unpack(fireArgs))
+                        -- Mengirim data ke server hanya jika semua kondisi terpenuhi
+                        if isSending then
+                            if auto_curve then
+                                originalParryRemote:FireServer(0, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
+                            else
+                                originalParryRemote:FireServer(0, cf, unpack(fireArgs))
+                            end
                         end
                     end
 
