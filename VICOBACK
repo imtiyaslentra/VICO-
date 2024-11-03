@@ -45,7 +45,7 @@ local visualize_Enabled = false
 local ai_Enabled = false
 local auto_win = false
 local tp_hit = false
-local potanum = 15
+local potanum = 1000
 local Services = {game:GetService("AdService"),game:GetService("SocialService")}
 
 local function get_closest_entity(Object)
@@ -785,11 +785,13 @@ Takentime = tick() - aura_table.hit_Time
 end)
 
 
+-- Fungsi AutoSpam menggunakan task.spawn
 task.spawn(function()
+    -- Menghubungkan fungsi ke event Heartbeat
     autospamvar = RunService.Heartbeat:Connect(function()
-        -- Pre-check if auto_spam is enabled, player exists, and not in training mode
+        -- Pemeriksaan awal untuk memastikan auto_spam aktif dan kondisi lainnya
         if not auto_spam or not workspace.Alive:FindFirstChild(local_player.Name) or training_mode then
-            -- Reset aura table and spam states
+            -- Reset status spam dan tabel aura jika salah satu kondisi tidak terpenuhi
             aura_table.hit_Count = 0
             aura_table.is_Spamming = false
             aura_table.last_target = nil
@@ -798,40 +800,52 @@ task.spawn(function()
             return
         end
 
-        -- Proceed only if closest entity is valid and in workspace
+        -- Memastikan closest_Entity valid dan ada di workspace
         if closest_Entity and workspace.Alive:FindFirstChild(closest_Entity.Name) and ((not standalone and aura_table.is_Spamming) or (standalone)) then
-            local playerPosition = local_player.Character.PrimaryPart.Position
-            local entityPosition = closest_Entity.HumanoidRootPart.Position
-                local distanceToEntity = local_player:DistanceFromCharacter(entityPosition)
-                -- Perform spam actions only when within range
-                if distanceToEntity <= aura_table.spam_Range then
-                    ismyautoparryspamming = true
+            local playerPosition = local_player.Character.PrimaryPart.Position -- Posisi pemain
+            local entityPosition = closest_Entity.HumanoidRootPart.Position -- Posisi entitas terdekat
+            local distanceToEntity = local_player:DistanceFromCharacter(entityPosition) -- Menghitung jarak ke entitas
 
-                    -- Pre-compute values before the loop for efficiency
-                    local cf = camera.CFrame
-                    local randomTarget = Vector3.new(math.random(-1000, 1000), math.random(0, 1000), math.random(100, 1000))
-                    local targetPosition = closest_Entity_To_mouse.HumanoidRootPart.Position
-                    local fireArgs = {
-                        {[closest_Entity_To_mouse.Name] = targetPosition},
-                        {targetPosition.X, targetPosition.Y}
-                    }
+            -- Melakukan spam hanya jika dalam jangkauan
+            if distanceToEntity <= aura_table.spam_Range then
+                ismyautoparryspamming = true -- Tandai sebagai sedang spam
 
-                    -- Perform spamming asynchronously for speed using task.defer
-                    task.defer(function()
-                        for count = 1, potanum do
-                            if auto_curve then
-                                originalParryRemote:FireServer(0, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
-                            else
-                                originalParryRemote:FireServer(0, cf, unpack(fireArgs))
-                            end
+                -- Siapkan variabel sebelum loop untuk efisiensi
+                local cf = camera.CFrame -- Mendapatkan posisi CFrame kamera
+                local randomTarget = Vector3.new(math.random(-1000, 1000), math.random(0, 1000), math.random(100, 1000)) -- Posisi target acak
+                local targetPosition = closest_Entity_To_mouse.HumanoidRootPart.Position -- Posisi target berdasarkan entitas terdekat dengan mouse
+                local fireArgs = {
+                    {[closest_Entity_To_mouse.Name] = targetPosition}, -- Menyimpan argumen untuk FireServer
+                    {targetPosition.X, targetPosition.Y} -- Koordinat target
+                }
+
+                -- Melakukan spam secara asinkron untuk kecepatan menggunakan task.defer
+                task.defer(function()
+                    for count = 1, potanum do -- Melakukan spam sesuai jumlah yang ditentukan
+                        -- Periksa kondisi untuk menghentikan spam
+                        if not auto_spam or not workspace.Alive:FindFirstChild(local_player.Name) or 
+                           training_mode or distanceToEntity > aura_table.spam_Range or 
+                           not closest_Entity or not workspace.Alive:FindFirstChild(closest_Entity.Name) then
+                            -- Jika salah satu kondisi tidak terpenuhi, keluar dari loop
+                            break
                         end
-                    end)
-                else
-                    -- Reset spam state if out of range
-                    ismyautoparryspamming = false
-                end
+
+                        -- Mengirim data ke server menggunakan FireServer
+                        if auto_curve then
+                            -- Jika auto_curve aktif, menggunakan target acak
+                            originalParryRemote:FireServer(0, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
+                        else
+                            -- Jika tidak, menggunakan posisi CFrame kamera saat ini
+                            originalParryRemote:FireServer(0, cf, unpack(fireArgs))
+                        end
+                    end
+                end)
+            else
+                -- Reset status spam jika keluar dari jangkauan
+                ismyautoparryspamming = false
+            end
         else
-            -- Reset spam state if entity is not found
+            -- Reset status spam jika entitas tidak ditemukan
             ismyautoparryspamming = false
         end
     end)
