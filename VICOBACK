@@ -1,4 +1,4 @@
-print("script is load 😁👍😭")
+print("script is load 😁👍")
 wait(1)
 print("script is running wait a 1 second 💪😈")
 wait(1)
@@ -45,7 +45,7 @@ local visualize_Enabled = false
 local ai_Enabled = false
 local auto_win = false
 local tp_hit = false
-local potanum = 1000
+local potanum = 500
 local Services = {game:GetService("AdService"),game:GetService("SocialService")}
 
 local function get_closest_entity(Object)
@@ -826,8 +826,9 @@ task.spawn(function()
                         if not auto_spam or not workspace.Alive:FindFirstChild(local_player.Name) or 
                            training_mode or distanceToEntity > aura_table.spam_Range or 
                            not closest_Entity or not workspace.Alive:FindFirstChild(closest_Entity.Name) then
-                            -- Jika salah satu kondisi tidak terpenuhi, keluar dari loop
-                            break
+                            -- Jika salah satu kondisi tidak terpenuhi, reset dan keluar dari loop
+                            ismyautoparryspamming = false
+                            return
                         end
 
                         -- Mengirim data ke server menggunakan FireServer
@@ -838,7 +839,14 @@ task.spawn(function()
                             -- Jika tidak, menggunakan posisi CFrame kamera saat ini
                             originalParryRemote:FireServer(0, cf, unpack(fireArgs))
                         end
+
+                        -- Menghentikan pengiriman jika sudah mencapai batas potanum
+                        if count >= potanum then
+                            break -- Keluar dari loop jika sudah mencapai potanum
+                        end
                     end
+                    -- Reset status spam setelah selesai
+                    ismyautoparryspamming = false
                 end)
             else
                 -- Reset status spam jika keluar dari jangkauan
