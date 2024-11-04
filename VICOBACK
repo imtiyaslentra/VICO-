@@ -1,4 +1,4 @@
-print("script is load 😁👍")
+print("script is load 😈")
 wait(1)
 print("script is running wait a 1 second 💪😈")
 wait(1)
@@ -817,11 +817,11 @@ task.spawn(function()
 
                     -- Perform spamming asynchronously for speed using task.defer
                     task.defer(function()
-                        for count = 1, potanum do
+                        for count = 500, potanum do
                             if auto_curve then
-                                originalParryRemote:FireServer(0, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
+                                originalParryRemote:FireServer(0.5, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
                             else
-                                originalParryRemote:FireServer(0, cf, unpack(fireArgs))
+                                originalParryRemote:FireServer(0.5, cf, unpack(fireArgs))
                             end
                         end
                     end)
