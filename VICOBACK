@@ -1,4 +1,4 @@
-print("script is load 😈")
+print("script is load 😈!")
 wait(1)
 print("script is running wait a 1 second 💪😈")
 wait(1)
