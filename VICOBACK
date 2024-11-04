@@ -1176,7 +1176,7 @@ Window:AddToggle({
 
 Window:AddToggle({
 	Title = "Autospam",
-	Description = "Toggles Autospam when near player(only works on clash)",
+	Description = "Toggles Autospam the probability of this detection is quite good(🧏)",
 	Tab = Main,
 	Callback = function(state)
 	
