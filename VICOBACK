@@ -917,8 +917,8 @@ autoparryvar = RunService.Heartbeat:Connect(function()
     local target_Dot = target_isMoving and math.max(target_Direction:Dot(target_Velocity.Unit), 0)
 
     aura_table.spam_Range = math.clamp(math.max(math.max(ping / 8.5, 15) + ball_Speed / 7.5, 8.4), 25, 1200)
-    speedFactor = 3 - (ping / 100)
-    speedFactorPingBased = 6.1 - (ping / 100)
+    speedFactor = 3.2 - (ping / 100)
+    speedFactorPingBased = 6.2 - (ping / 100)
     aura_table.parry_Range = math.max(math.max(ping, 3.5) + ball_Speed / speedFactor, speedFactorPingBased)
 
     if target_isMoving then
@@ -934,13 +934,13 @@ autoparryvar = RunService.Heartbeat:Connect(function()
     end
 
     task.spawn(function()
-        if (tick() - aura_table.ball_Warping) >= 0.15 + target_distance_Limited - ball_speed_Limited or ball_Distance <= 10 then
+        if (tick() - aura_table.ball_Warping) >= 0.20 + target_distance_Limited - ball_speed_Limited or ball_Distance <= 10 then
             aura_table.is_ball_Warping = false
             return
         end
 
         if aura_table.last_target then
-            if (ball_Position - aura_table.last_target.HumanoidRootPart.Position).Magnitude > 35.5 or target_Distance <= 12 then
+            if (ball_Position - aura_table.last_target.HumanoidRootPart.Position).Magnitude > 35.5 or target_Distance <= 11 then
                 aura_table.is_ball_Warping = false
             end
         end
@@ -952,14 +952,6 @@ autoparryvar = RunService.Heartbeat:Connect(function()
         local cf = camera.CFrame
         local target_X = targetPosition.X
         local target_Y = targetPosition.Y
-
-        -- New Prediction Logic Based on Curve Detection
-        -- Prediksi posisi bola jika curve terdeteksi
-        if ball_Dot < -0.2 then
-            local predicted_ball_Position = ball_Position + ball_Velocity * 0.5 -- Misalnya 0.5 detik ke depan
-            target_X = predicted_ball_Position.X
-            target_Y = predicted_ball_Position.Y
-        end
 
         if auto_curve then
             originalParryRemote:FireServer(
