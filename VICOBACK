@@ -4,7 +4,7 @@ print("script is running wait a 1 second 💪😈")
 wait(1)
 print("dont be sigma because you sigma 🧏, Nguwawor loh ya")
 wait(1)
-print("full of print right 🙏😸")
+print("full of print right 🙏")
 if _G.Ran == true then return end
 wait()
 _G.Ran = true
@@ -893,7 +893,7 @@ autoparryvar = RunService.Heartbeat:Connect(function()
     local ball_Speed = ball_Velocity.Magnitude
 
     -- Anti-curve mechanism: Adjust for curving velocity
-    if ball_Speed < 24 or ball_Velocity.Y > 10 then
+    if ball_Speed < 25 or ball_Velocity.Y > 10 then
         aura_table.hit_Time = tick() * 10
         aura_table.hit_Count = 0
         aura_table.is_ball_Warping = false
@@ -921,7 +921,6 @@ autoparryvar = RunService.Heartbeat:Connect(function()
     local speedFactorPingBased = 7.15 - (ping / 100)
     if ball_Speed >= 750 then
     speedFactor = 2.55 - (ping / 100)
-	end
     data.parry_Range = math.max(math.max(ping / 2, 3.5) + ball_Speed / speedFactor, speedFactorPingBased)
 
     if target_isMoving then
