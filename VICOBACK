@@ -893,7 +893,7 @@ autoparryvar = RunService.Heartbeat:Connect(function()
     local ball_Speed = ball_Velocity.Magnitude
 
     -- Anti-curve mechanism: Adjust for curving velocity
-    if ball_Speed < 25 or ball_Velocity.Y > 10 then
+    if ball_Speed < 24 or ball_Velocity.Y > 10 then
         aura_table.hit_Time = tick() * 10
         aura_table.hit_Count = 0
         aura_table.is_ball_Warping = false
