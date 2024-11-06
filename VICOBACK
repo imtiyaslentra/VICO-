@@ -104,7 +104,7 @@ end
 local aura_table = {
 	canParry = true,
 	is_Spamming = false,
-	parry_Range = 15,
+	parry_Range = 17,
 	spam_Range = 5,  
 	hit_Count = 0,
 	hit_Time = tick(),
@@ -928,7 +928,7 @@ autoparryvar = RunService.Heartbeat:Connect(function()
     aura_table.spam_Range = math.clamp(math.max(math.max(ping / 8.5, 15) + ball_Speed / 7.5, 8.4), 25, 1200)
     speedFactor = 3.3 - (ping / 100)
     speedFactorPingBased = 6.1 - (ping / 100)
-    aura_table.parry_Range = math.max(math.max(ping, 3.5) + ball_Speed / speedFactor, speedFactorPingBased)
+    aura_table.parry_Range = math.clamp(math.max(math.max(ping, 3.5) + ball_Distance / speedFactor, speedFactorPingBased)
 
     if target_isMoving then
         aura_table.is_Spamming = aura_table.hit_Count > 3 or (target_Distance <= aura_table.spam_Range and ball_Distance < 18 and ball_Speed > 8) and ball_Velocity.Y > -50 and ball_Dot > 0.15
