@@ -826,7 +826,7 @@ task.spawn(function()
 
                     -- Perform spamming asynchronously for speed using task.defer
                     task.defer(function()
-                        for count = 1, potanum do
+                        for count = 15, potanum do
                             if auto_curve then
                                 originalParryRemote:FireServer(0.5, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
                             else
