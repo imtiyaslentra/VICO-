@@ -45,7 +45,7 @@ local visualize_Enabled = false
 local ai_Enabled = false
 local auto_win = false
 local tp_hit = false
-local potanum = 30
+local potanum = 250
 local Services = {game:GetService("AdService"),game:GetService("SocialService")}
 
 function initializate(dataFolder_name: string)
@@ -826,7 +826,7 @@ task.spawn(function()
 
                     -- Perform spamming asynchronously for speed using task.defer
                     task.defer(function()
-                        for count = 1, potanum do
+                        for count = 250, potanum do
                             if auto_curve then
                                 originalParryRemote:FireServer(0, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
                             else
