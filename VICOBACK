@@ -25,6 +25,7 @@ local function getTrainingBall()
 	end
 end
 local ismyautoparryspamming
+local continueSpam = true -- kontrol status spamming
 local local_player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
 local standalone = false
@@ -803,6 +804,7 @@ task.spawn(function()
             aura_table.last_target = nil
             ismyautoparryspamming = false
             aura_table.spam_Range = 0
+            continueSpam = false -- hentikan spam secara paksa
             return
         end
 
@@ -810,37 +812,42 @@ task.spawn(function()
         if closest_Entity and workspace.Alive:FindFirstChild(closest_Entity.Name) and ((not standalone and aura_table.is_Spamming) or (standalone)) then
             local playerPosition = local_player.Character.PrimaryPart.Position
             local entityPosition = closest_Entity.HumanoidRootPart.Position
-                local distanceToEntity = local_player:DistanceFromCharacter(entityPosition)
-                -- Perform spam actions only when within range
-                if distanceToEntity <= aura_table.spam_Range then
-                    ismyautoparryspamming = true
+            local distanceToEntity = local_player:DistanceFromCharacter(entityPosition)
+            
+            -- Perform spam actions only when within range
+            if distanceToEntity <= aura_table.spam_Range then
+                ismyautoparryspamming = true
+                continueSpam = true -- aktifkan spam
 
-                    -- Pre-compute values before the loop for efficiency
-                    local cf = camera.CFrame
-                    local randomTarget = Vector3.new(math.random(-1000, 1000), math.random(0, 1000), math.random(100, 1000))
-                    local targetPosition = closest_Entity_To_mouse.HumanoidRootPart.Position
-                    local fireArgs = {
-                        {[closest_Entity_To_mouse.Name] = targetPosition},
-                        {targetPosition.X, targetPosition.Y}
-                    }
+                -- Pre-compute values before the loop for efficiency
+                local cf = camera.CFrame
+                local randomTarget = Vector3.new(math.random(-1000, 1000), math.random(0, 1000), math.random(100, 1000))
+                local targetPosition = closest_Entity_To_mouse.HumanoidRootPart.Position
+                local fireArgs = {
+                    {[closest_Entity_To_mouse.Name] = targetPosition},
+                    {targetPosition.X, targetPosition.Y}
+                }
 
-                    -- Perform spamming asynchronously for speed using task.defer
-                    task.defer(function()
-                        for count = 15, potanum do
-                            if auto_curve then
-                                originalParryRemote:FireServer(0.5, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
-                            else
-                                originalParryRemote:FireServer(0.5, cf, unpack(fireArgs))
-                            end
+                -- Perform spamming asynchronously for speed using task.defer
+                task.defer(function()
+                    for count = 15, potanum do
+                        if not continueSpam then break end -- hentikan jika kondisi berubah
+                        if auto_curve then
+                            originalParryRemote:FireServer(0.5, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
+                        else
+                            originalParryRemote:FireServer(0.5, cf, unpack(fireArgs))
                         end
-                    end)
-                else
-                    -- Reset spam state if out of range
-                    ismyautoparryspamming = false
-                end
+                    end
+                end)
+            else
+                -- Reset spam state if out of range
+                ismyautoparryspamming = false
+                continueSpam = false
+            end
         else
             -- Reset spam state if entity is not found
             ismyautoparryspamming = false
+            continueSpam = false
         end
     end)
 
@@ -931,10 +938,20 @@ autoparryvar = RunService.Heartbeat:Connect(function()
     aura_table.parry_Range = math.clamp(math.max(math.max(ping, 3.5) + ball_Distance / speedFactor, speedFactorPingBased)
 
     if target_isMoving then
-        aura_table.is_Spamming = aura_table.hit_Count > 3 or (target_Distance <= aura_table.spam_Range and ball_Distance < 18 and ball_Speed > 8) and ball_Velocity.Y > -50 and ball_Dot > 0.15
-    else
-        aura_table.is_Spamming = aura_table.hit_Count > 3 or (target_Distance <= aura_table.spam_Range and ball_Distance < 18 and ball_Speed > 8) and ball_Velocity.Y > -50 and ball_Dot > 0.15
-    end
+aura_table.is_Spamming = aura_table.hit_Count >= 3 and 
+    (target_Distance <= aura_table.spam_Range and 
+     ball_Distance < 18 and 
+     ball_Speed > 8 and 
+     ball_Velocity.Y > -50 and 
+     ball_Dot > 0.15)
+else     
+aura_table.is_Spamming = aura_table.hit_Count >= 3 and 
+    (target_Distance <= aura_table.spam_Range and 
+     ball_Distance < 18 and 
+     ball_Speed > 8 and 
+     ball_Velocity.Y > -50 and 
+     ball_Dot > 0.15)
+end
 
     local velocity_angle = math.abs(math.acos(ball_Direction:Dot(ball_Velocity.Unit)))
 
