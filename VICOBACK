@@ -110,15 +110,16 @@ local function get_center()
 end
 
 local aura_table = {
-	canParry = true,
-	is_Spamming = false,
-	parry_Range = 30,
-	spam_Range = 0,  
-	hit_Count = 0,
-	hit_Time = tick(),
-	ball_Warping = tick(),
-	is_ball_Warping = false,
-	last_target = nil,
+    canParry = true,
+    is_Spamming = false,
+    parry_Range = 30,
+    spam_Range = 0,  
+    hit_Count = 0,
+    hit_Time = tick(),
+    ball_Warping = tick(),
+    is_ball_Warping = false,
+    last_target = nil,
+    previous_angle = 0 -- Menambahkan previous_angle
 }
 
 workspace:WaitForChild("Balls").ChildRemoved:Connect(function(child)
@@ -946,24 +947,44 @@ autoparryvar = RunService.Heartbeat:Connect(function()
 
     local velocity_angle = math.abs(math.acos(ball_Direction:Dot(ball_Velocity.Unit)))
 
-    if ball_Dot < -0.2 then
-        aura_table.ball_Warping = tick()
+-- Logika dasar untuk mendeteksi curve atau warp jika ball_Dot terlalu kecil
+if ball_Dot < -0.2 then
+    aura_table.ball_Warping = tick()
+end
+
+-- Logika tambahan untuk mendeteksi perubahan arah yang tajam atau akselerasi mendadak
+local angle_threshold = 0.35  -- Threshold tambahan untuk mendeteksi perubahan arah (bisa disesuaikan)
+local speed_threshold = 15    -- Threshold untuk kecepatan bola yang mungkin menyebabkan warping (bisa disesuaikan)
+local recent_angle = aura_table.previous_angle or velocity_angle  -- Membandingkan dengan sudut sebelumnya untuk perubahan tajam
+
+-- Deteksi perubahan arah tajam dan kecepatan tinggi yang mungkin menunjukkan warping
+if math.abs(velocity_angle - recent_angle) > angle_threshold and ball_Speed > speed_threshold then
+    aura_table.is_ball_Warping = true
+    aura_table.ball_Warping = tick()
+end
+
+-- Menyimpan sudut terbaru untuk perbandingan selanjutnya
+aura_table.previous_angle = velocity_angle
+
+-- Memulai deteksi anti-warping
+task.spawn(function()
+    -- Cek apakah bola sudah tidak mengalami warping lagi berdasarkan waktu dan jarak
+    if (tick() - aura_table.ball_Warping) >= 0.15 + target_distance_Limited - ball_speed_Limited or ball_Distance <= 10 then
+        aura_table.is_ball_Warping = false
+        return
     end
 
-    task.spawn(function()
-        if (tick() - aura_table.ball_Warping) >= 0.15 + target_distance_Limited - ball_speed_Limited or ball_Distance <= 10 then
+    -- Jika target terakhir ada, cek jarak dan kondisi lainnya
+    if aura_table.last_target then
+        -- Memeriksa jarak dan kecepatan untuk mengonfirmasi bahwa bola sudah tidak mengalami curve atau warp
+        if (ball_Position - aura_table.last_target.HumanoidRootPart.Position).Magnitude > 35.5 or target_Distance <= 12 then
             aura_table.is_ball_Warping = false
-            return
         end
+    end
 
-        if aura_table.last_target then
-            if (ball_Position - aura_table.last_target.HumanoidRootPart.Position).Magnitude > 35.5 or target_Distance <= 12 then
-                aura_table.is_ball_Warping = false
-            end
-        end
-
-        aura_table.is_ball_Warping = true
-    end)
+    -- Memastikan kondisi curve/warp dinyalakan jika semua deteksi menunjukkan ada perubahan tajam
+    aura_table.is_ball_Warping = true
+end)
 
     if ball_Distance <= aura_table.parry_Range and not aura_table.is_ball_Warping and ball_Speed > 0 and ball_Dot > 0.1 then
         local cf = camera.CFrame
