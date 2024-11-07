@@ -28,7 +28,9 @@ local ismyautoparryspamming
 local local_player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
 local standalone = false
-print("Vico Hub ;)")
+print("[🔃]: Vico Hub Is Succesfull Load...")
+
+--//OPTIONS
 
 local originalParryRemote
 local originalResolveParryRemote 
@@ -36,16 +38,22 @@ local aivar, visualizervar, autospamvar, autoparryvar, tphitvar, autowinvar
 local nurysium_Data = nil
 local hit_Sound = nil
 local closest_Entity = nil
+local parry_remote = nil
 local aura_Enabled = false
 local auto_curve = false
+local hit_sound_Enabled = false
 local auto_spam = false
 local training_mode = false
+local hit_effect_Enabled = false
 local anti_curve_spam_Enabled = false
 local visualize_Enabled = false
 local ai_Enabled = false
 local auto_win = false
 local tp_hit = false
-local potanum = 250
+local night_mode_Enabled = false
+local spectate_Enabled = false
+local trail_Enabled = false
+local potanum = 15
 local Services = {game:GetService("AdService"),game:GetService("SocialService")}
 
 function initializate(dataFolder_name: string)
@@ -104,8 +112,8 @@ end
 local aura_table = {
 	canParry = true,
 	is_Spamming = false,
-	parry_Range = 17,
-	spam_Range = 5,  
+	parry_Range = 30,
+	spam_Range = 0,  
 	hit_Count = 0,
 	hit_Time = tick(),
 	ball_Warping = tick(),
