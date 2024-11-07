@@ -25,7 +25,6 @@ local function getTrainingBall()
 	end
 end
 local ismyautoparryspamming
-local continueSpam = true -- kontrol status spamming
 local local_player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
 local standalone = false
@@ -804,7 +803,6 @@ task.spawn(function()
             aura_table.last_target = nil
             ismyautoparryspamming = false
             aura_table.spam_Range = 0
-            continueSpam = false -- hentikan spam secara paksa
             return
         end
 
@@ -812,44 +810,37 @@ task.spawn(function()
         if closest_Entity and workspace.Alive:FindFirstChild(closest_Entity.Name) and ((not standalone and aura_table.is_Spamming) or (standalone)) then
             local playerPosition = local_player.Character.PrimaryPart.Position
             local entityPosition = closest_Entity.HumanoidRootPart.Position
-            local distanceToEntity = local_player:DistanceFromCharacter(entityPosition)
-            
-            -- Perform spam actions only when within range
-            if distanceToEntity <= aura_table.spam_Range then
-                ismyautoparryspamming = true
-                continueSpam = true -- aktifkan spam
+                local distanceToEntity = local_player:DistanceFromCharacter(entityPosition)
+                -- Perform spam actions only when within range
+                if distanceToEntity <= aura_table.spam_Range then
+                    ismyautoparryspamming = true
 
-                -- Pre-compute values before the loop for efficiency
-                local cf = camera.CFrame
-                local randomTarget = Vector3.new(math.random(-1000, 1000), math.random(0, 1000), math.random(100, 1000))
-                local targetPosition = closest_Entity_To_mouse.HumanoidRootPart.Position
-                local fireArgs = {
-                    {[closest_Entity_To_mouse.Name] = targetPosition},
-                    {targetPosition.X, targetPosition.Y}
-                }
+                    -- Pre-compute values before the loop for efficiency
+                    local cf = camera.CFrame
+                    local randomTarget = Vector3.new(math.random(-1000, 1000), math.random(0, 1000), math.random(100, 1000))
+                    local targetPosition = closest_Entity_To_mouse.HumanoidRootPart.Position
+                    local fireArgs = {
+                        {[closest_Entity_To_mouse.Name] = targetPosition},
+                        {targetPosition.X, targetPosition.Y}
+                    }
 
-                -- Perform spamming asynchronously for speed using task.defer
-                task.defer(function()
-                    for count = 15, potanum do
-                        if not continueSpam then
-                        break
-                      end -- hentikan jika kondisi berubah
-                        if auto_curve then
-                            originalParryRemote:FireServer(0.5, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
-                        else
-                            originalParryRemote:FireServer(0.5, cf, unpack(fireArgs))
+                    -- Perform spamming asynchronously for speed using task.defer
+                    task.defer(function()
+                        for count = 1, potanum do
+                            if auto_curve then
+                                originalParryRemote:FireServer(0, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
+                            else
+                                originalParryRemote:FireServer(0, cf, unpack(fireArgs))
+                            end
                         end
-                    end
-                end)
-            else
-                -- Reset spam state if out of range
-                ismyautoparryspamming = false
-                continueSpam = false
-            end
+                    end)
+                else
+                    -- Reset spam state if out of range
+                    ismyautoparryspamming = false
+                end
         else
             -- Reset spam state if entity is not found
             ismyautoparryspamming = false
-            continueSpam = false
         end
     end)
 
