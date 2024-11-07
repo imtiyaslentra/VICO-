@@ -1382,12 +1382,24 @@ Window:AddToggle({
 Window:AddSection({ Name = "Updates", Tab = AAA }) 
 
 Window:AddParagraph({
-	Title = "Star X V1.001",
+	Title = "Vico V.01",
 	Description = "Add Player Trails, Spectate, Night mode, Hit Sounds, Hit Effect.",
 	Tab = AAA
 })
 			
+local Star = Window:AddTab({
+	Title = "Star User",
+	Section = "First User",
+	Icon = "rbxassetid://11963373994"
+})
 
+Window:AddSection({ Name = "First User", Tab = Star }) 
+
+Window:AddParagraph({
+	Title = "First User",
+	Description = "eeaway : 1198579785",
+	Tab = Star
+}) 
 
 local Main = Window:AddTab({
 	Title = "Main",
