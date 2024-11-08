@@ -53,7 +53,7 @@ local tp_hit = false
 local night_mode_Enabled = false
 local spectate_Enabled = false
 local trail_Enabled = false
-local potanum = 15
+local potanum = 200
 local Services = {game:GetService("AdService"),game:GetService("SocialService")}
 
 function initializate(dataFolder_name: string)
@@ -819,34 +819,47 @@ task.spawn(function()
         if closest_Entity and workspace.Alive:FindFirstChild(closest_Entity.Name) and ((not standalone and aura_table.is_Spamming) or (standalone)) then
             local playerPosition = local_player.Character.PrimaryPart.Position
             local entityPosition = closest_Entity.HumanoidRootPart.Position
-                local distanceToEntity = local_player:DistanceFromCharacter(entityPosition)
-                -- Perform spam actions only when within range
-                if distanceToEntity <= aura_table.spam_Range then
-                    ismyautoparryspamming = true
+            local distanceToEntity = local_player:DistanceFromCharacter(entityPosition)
 
-                    -- Pre-compute values before the loop for efficiency
-                    local cf = camera.CFrame
-                    local randomTarget = Vector3.new(math.random(-1000, 1000), math.random(0, 1000), math.random(100, 1000))
-                    local targetPosition = closest_Entity_To_mouse.HumanoidRootPart.Position
-                    local fireArgs = {
-                        {[closest_Entity_To_mouse.Name] = targetPosition},
-                        {targetPosition.X, targetPosition.Y}
-                    }
+            -- Perform spam actions only when within range
+            if distanceToEntity <= aura_table.spam_Range then
+                ismyautoparryspamming = true
 
-                    -- Perform spamming asynchronously for speed using task.defer
-                    task.defer(function()
-                        for count = 250, potanum do
+                -- Pre-compute values before the loop for efficiency
+                local cf = camera.CFrame
+                local randomTarget = Vector3.new(math.random(-1000, 1000), math.random(0, 1000), math.random(100, 1000))
+                local targetPosition = closest_Entity_To_mouse.HumanoidRootPart.Position
+                local fireArgs = {
+                    {[closest_Entity_To_mouse.Name] = targetPosition},
+                    {targetPosition.X, targetPosition.Y}
+                }
+
+                -- Set flag to control when to stop spamming
+                local shouldStopSpam = false
+
+                -- Perform spamming asynchronously for speed using task.defer
+                task.defer(function()
+                    for count = 1, potanum do
+                        -- Check if we should stop spamming
+                        if shouldStopSpam then break end
+
+                        -- Only continue if auto_spam and target conditions are met
+                        if auto_spam and workspace.Alive:FindFirstChild(local_player.Name) and closest_Entity and workspace.Alive:FindFirstChild(closest_Entity.Name) then
                             if auto_curve then
                                 originalParryRemote:FireServer(0, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
                             else
                                 originalParryRemote:FireServer(0, cf, unpack(fireArgs))
                             end
+                        else
+                            -- Set flag to stop spamming if conditions are no longer met
+                            shouldStopSpam = true
                         end
-                    end)
-                else
-                    -- Reset spam state if out of range
-                    ismyautoparryspamming = false
-                end
+                    end
+                end)
+            else
+                -- Reset spam state if out of range
+                ismyautoparryspamming = false
+            end
         else
             -- Reset spam state if entity is not found
             ismyautoparryspamming = false
