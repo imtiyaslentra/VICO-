@@ -802,14 +802,19 @@ Takentime = tick() - aura_table.hit_Time
 	end)
 end)
 
+local stopSpamming = false
+
 task.spawn(function()
     autospamvar = RunService.Heartbeat:Connect(function()
+        -- Cek apakah auto_spam aktif dan pemain valid
         if not auto_spam or not workspace.Alive:FindFirstChild(local_player.Name) or training_mode then
+            -- Reset variabel untuk menghentikan spam
             aura_table.hit_Count = 0
             aura_table.is_Spamming = false
             aura_table.last_target = nil
             ismyautoparryspamming = false
             aura_table.spam_Range = 0
+            stopSpamming = true  -- Set flag untuk menghentikan task.spawn
             return
         end
 
@@ -818,9 +823,12 @@ task.spawn(function()
             local entityPosition = closest_Entity.HumanoidRootPart.Position
             local distanceToEntity = local_player:DistanceFromCharacter(entityPosition)
 
+            -- Cek jarak sebelum memulai spam
             if distanceToEntity <= aura_table.spam_Range then
                 ismyautoparryspamming = true
+                stopSpamming = false  -- Aktifkan spam
 
+                -- Precompute data untuk meningkatkan performa
                 local cf = camera.CFrame
                 local randomTarget = Vector3.new(math.random(-1000, 1000), math.random(0, 1000), math.random(100, 1000))
                 local targetPosition = closest_Entity_To_mouse.HumanoidRootPart.Position
@@ -829,13 +837,13 @@ task.spawn(function()
                     {targetPosition.X, targetPosition.Y}
                 }
 
-                local shouldStopSpam = false
-
+                -- Task.spawn yang akan berhenti jika `stopSpamming` aktif
                 task.spawn(function()
                     for count = 1, potanum do
-                        if shouldStopSpam then break end
+                        -- Cek apakah perlu berhenti
+                        if stopSpamming then break end
 
-                        -- Tambahkan task.wait() agar ada jeda dalam pengiriman sinyal
+                        -- Tambahkan jeda antar pengiriman
                         task.wait(0.01)
 
                         if auto_spam and workspace.Alive:FindFirstChild(local_player.Name) and closest_Entity and workspace.Alive:FindFirstChild(closest_Entity.Name) then
@@ -845,15 +853,21 @@ task.spawn(function()
                                 originalParryRemote:FireServer(0, cf, unpack(fireArgs))
                             end
                         else
-                            shouldStopSpam = true
+                            -- Jika kondisi gagal, hentikan loop
+                            stopSpamming = true
+                            break
                         end
                     end
                 end)
             else
+                -- Reset jika keluar dari range
                 ismyautoparryspamming = false
+                stopSpamming = true  -- Set untuk menghentikan task.spawn
             end
         else
+            -- Reset jika tidak ada entity terdekat
             ismyautoparryspamming = false
+            stopSpamming = true  -- Set untuk menghentikan task.spawn
         end
     end)
 
