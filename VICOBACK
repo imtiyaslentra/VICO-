@@ -951,83 +951,74 @@ autoparryvar = RunService.Heartbeat:Connect(function()
     local target_Velocity = closest_Entity.HumanoidRootPart.AssemblyLinearVelocity
     local target_isMoving = target_Velocity.Magnitude > 0
     local target_Dot = target_isMoving and math.max(target_Direction:Dot(target_Velocity.Unit), 0)
-   
--- Menghitung rentang parry berdasarkan kecepatan bola, jarak, dan ping
+
+-- Menyesuaikan nilai spam Range
 aura_table.spam_Range = math.clamp(math.max(math.max(ping / 8.5, 15) + ball_Speed / 7.5, 8.4), 25, 1200)
 
--- Faktor kecepatan berdasarkan ping
-speedFactor = 3 - (ping / 100)  -- Penyesuaian berdasarkan ping
-speedFactorPingBased = 6.1 - (ping / 100)  -- Faktor tambahan untuk penyesuaian yang lebih halus dengan ping
+-- Pastikan nilai ping tidak terlalu kecil
+ping = math.max(ping, 1)  -- Pastikan ping tidak nol atau terlalu kecil
 
--- Menghitung faktor kecepatan bola yang disesuaikan dengan ping
-local ball_Speed_Adjusted = ball_Speed / speedFactor
-local distance_Adjusted = math.max(ball_Distance, 10)  -- Menghindari jarak parry yang terlalu kecil jika bola sangat dekat
+-- Menyesuaikan faktor kecepatan berdasarkan ping
+speedFactor = 3 - (ping / 100)
+speedFactorPingBased = 6.1 - (ping / 100)
 
--- Menghitung rentang parry berdasarkan kecepatan bola, jarak, dan ping
-aura_table.parry_Range = math.max(
-    math.max(ping, 3.5) + ball_Speed_Adjusted + (distance_Adjusted / 10),  -- Jarak bola mempengaruhi rentang parry
-    speedFactorPingBased  -- Faktor minimum berdasarkan ping
-)
+-- Menyesuaikan jangkauan parry berdasarkan kecepatan bola dan ping
+aura_table.parry_Range = math.max(math.max(ping, 3.5) + ball_Speed / speedFactor, speedFactorPingBased)
 
--- Menentukan status spamming berdasarkan beberapa kondisi
-if target_isMoving then
-    aura_table.is_Spamming = aura_table.hit_Count > 2 or (target_Distance <= aura_table.spam_Range and ball_Distance < 18 and ball_Speed > 8) and ball_Velocity.Y > -50 and ball_Dot > 0.15
-else
-    aura_table.is_Spamming = aura_table.hit_Count > 2 or (target_Distance <= aura_table.spam_Range and ball_Distance < 18 and ball_Speed > 8) and ball_Velocity.Y > -50 and ball_Dot > 0.15
+-- Menambahkan penyesuaian dengan memperhitungkan kecepatan bola dan jarak
+if ball_Speed > 25 then
+    aura_table.parry_Range = aura_table.parry_Range * 1.2 -- Memperbesar jangkauan parry jika bola sangat cepat
 end
 
--- Menentukan sudut kecepatan bola (untuk deteksi perubahan arah)
+-- Logika untuk spam berdasarkan jarak target dan kecepatan bola
+aura_table.is_Spamming = (target_Distance <= aura_table.spam_Range and ball_Distance < 18 and ball_Speed > 8)
+                          and ball_Velocity.Y > -50 and ball_Dot > 0.15
+
+-- Menambahkan logika untuk target yang bergerak cepat
+if target_isMoving and ball_Speed > 12 then
+    aura_table.is_Spamming = true -- Aktifkan spam jika target bergerak cepat dan bola memiliki kecepatan tinggi
+end
+
+-- Menghitung sudut antara arah bola dan kecepatan bola
 local velocity_angle = math.abs(math.acos(ball_Direction:Dot(ball_Velocity.Unit)))
 
--- Deteksi curve atau warp jika ball_Dot terlalu kecil
+-- Menambahkan logika jika sudut dampak bola terlalu tajam
+if velocity_angle > math.rad(40) then
+    aura_table.is_ball_Warping = true -- Bola dianggap melengkung jika sudut terlalu tajam
+end
+
+-- Menyesuaikan waktu parry berdasarkan kecepatan bola dan jarak
+local parry_Timing_Adjustment = (ball_Speed / 100) + (ball_Distance / 100) -- Menggabungkan kecepatan dan jarak bola
+aura_table.parry_Timing = math.max(aura_table.parry_Range - parry_Timing_Adjustment, 0.5) -- Menyesuaikan waktu parry dengan lebih tepat
+
+-- Mendeteksi jika bola melengkung
 if ball_Dot < -0.2 then
-    aura_table.ball_Warping = tick()
+    aura_table.ball_Warping = tick() -- Mendeteksi jika bola melengkung
 end
 
--- Logika tambahan untuk mendeteksi perubahan arah tajam atau akselerasi mendadak
-local angle_threshold = 0.35  -- Threshold tambahan untuk mendeteksi perubahan arah
-local speed_threshold = 15    -- Threshold untuk kecepatan bola yang mungkin menyebabkan warping
-local recent_angle = aura_table.previous_angle or velocity_angle  -- Membandingkan dengan sudut sebelumnya untuk perubahan tajam
-
--- Deteksi perubahan arah tajam dan kecepatan tinggi yang mungkin menunjukkan warping
-if math.abs(velocity_angle - recent_angle) > angle_threshold and ball_Speed > speed_threshold then
-    aura_table.is_ball_Warping = true
-    aura_table.ball_Warping = tick()
-end
-
--- Menyimpan sudut terbaru untuk perbandingan selanjutnya
-aura_table.previous_angle = velocity_angle
-
--- Memulai deteksi anti-warping
+-- Task untuk mendeteksi apakah bola melengkung
 task.spawn(function()
-    -- Cek apakah bola sudah tidak mengalami warping lagi berdasarkan waktu dan jarak
+    -- Memperpanjang waktu deteksi jika bola bergerak cepat atau target terlalu jauh
     if (tick() - aura_table.ball_Warping) >= 0.15 + target_distance_Limited - ball_speed_Limited or ball_Distance <= 10 then
         aura_table.is_ball_Warping = false
         return
     end
 
-    -- Jika target terakhir ada, cek jarak dan kondisi lainnya
+    -- Memastikan bahwa bola hanya dianggap melengkung jika terlalu jauh dari target
     if aura_table.last_target then
-        -- Memeriksa jarak dan kecepatan untuk mengonfirmasi bahwa bola sudah tidak mengalami curve atau warp
         if (ball_Position - aura_table.last_target.HumanoidRootPart.Position).Magnitude > 35.5 or target_Distance <= 12 then
             aura_table.is_ball_Warping = false
         end
     end
 
-    -- Memastikan kondisi curve/warp dinyalakan jika semua deteksi menunjukkan ada perubahan tajam
-    aura_table.is_ball_Warping = true
+    -- Deteksi anti-curve lebih sensitif
+    if ball_Velocity.Y > 10 then
+        aura_table.is_ball_Warping = true -- Jika bola bergerak terlalu cepat ke arah vertikal, deteksi sebagai warping
+    end
 end)
 
--- Menambah faktor berdasarkan kecepatan dan jarak bola untuk deteksi parry
-local adjusted_SpeedFactor = ball_Speed / speedFactor
-local adjusted_DistanceFactor = ball_Distance / 10
-
--- Mengatur kondisi untuk memulai parry
-if ball_Distance <= (aura_table.parry_Range + adjusted_SpeedFactor + adjusted_DistanceFactor)
-   and not aura_table.is_ball_Warping
-   and ball_Speed > 0 
-   and ball_Dot > 0.1 then
-   -- Logic parry akan dilanjutkan jika semua kondisi terpenuhi
+-- Deteksi Parry
+if ball_Distance <= aura_table.parry_Range and not aura_table.is_ball_Warping and ball_Speed > 0 and ball_Dot > 0.1 then
         local cf = camera.CFrame
         local target_X = targetPosition.X
         local target_Y = targetPosition.Y
