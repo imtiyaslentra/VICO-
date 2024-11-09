@@ -951,13 +951,15 @@ autoparryvar = RunService.Heartbeat:Connect(function()
     local target_Velocity = closest_Entity.HumanoidRootPart.AssemblyLinearVelocity
     local target_isMoving = target_Velocity.Magnitude > 0
     local target_Dot = target_isMoving and math.max(target_Direction:Dot(target_Velocity.Unit), 0)
+   
+-- Menghitung rentang parry berdasarkan kecepatan bola, jarak, dan ping
+aura_table.spam_Range = math.clamp(math.max(math.max(ping / 8.5, 15) + ball_Speed / 7.5, 8.4), 25, 1200)
 
-    aura_table.spam_Range = math.clamp(math.max(math.max(ping / 8.5, 15) + ball_Speed / 7.5, 8.4), 25, 1200)
-    -- Menghitung faktor kecepatan bola dan pengaruh ping
+-- Faktor kecepatan berdasarkan ping
 speedFactor = 3 - (ping / 100)  -- Penyesuaian berdasarkan ping
 speedFactorPingBased = 6.1 - (ping / 100)  -- Faktor tambahan untuk penyesuaian yang lebih halus dengan ping
 
--- Menambahkan faktor kecepatan bola dan jarak bola dalam perhitungan range parry
+-- Menghitung faktor kecepatan bola yang disesuaikan dengan ping
 local ball_Speed_Adjusted = ball_Speed / speedFactor
 local distance_Adjusted = math.max(ball_Distance, 10)  -- Menghindari jarak parry yang terlalu kecil jika bola sangat dekat
 
@@ -966,22 +968,25 @@ aura_table.parry_Range = math.max(
     math.max(ping, 3.5) + ball_Speed_Adjusted + (distance_Adjusted / 10),  -- Jarak bola mempengaruhi rentang parry
     speedFactorPingBased  -- Faktor minimum berdasarkan ping
 )
-    if target_isMoving then
-        aura_table.is_Spamming = aura_table.hit_Count > 2 or (target_Distance <= aura_table.spam_Range and ball_Distance < 18 and ball_Speed > 8) and ball_Velocity.Y > -50 and ball_Dot > 0.15
-    else
-        aura_table.is_Spamming = aura_table.hit_Count > 2 or (target_Distance <= aura_table.spam_Range and ball_Distance < 18 and ball_Speed > 8) and ball_Velocity.Y > -50 and ball_Dot > 0.15
-    end
 
-    local velocity_angle = math.abs(math.acos(ball_Direction:Dot(ball_Velocity.Unit)))
+-- Menentukan status spamming berdasarkan beberapa kondisi
+if target_isMoving then
+    aura_table.is_Spamming = aura_table.hit_Count > 2 or (target_Distance <= aura_table.spam_Range and ball_Distance < 18 and ball_Speed > 8) and ball_Velocity.Y > -50 and ball_Dot > 0.15
+else
+    aura_table.is_Spamming = aura_table.hit_Count > 2 or (target_Distance <= aura_table.spam_Range and ball_Distance < 18 and ball_Speed > 8) and ball_Velocity.Y > -50 and ball_Dot > 0.15
+end
 
--- Logika dasar untuk mendeteksi curve atau warp jika ball_Dot terlalu kecil
+-- Menentukan sudut kecepatan bola (untuk deteksi perubahan arah)
+local velocity_angle = math.abs(math.acos(ball_Direction:Dot(ball_Velocity.Unit)))
+
+-- Deteksi curve atau warp jika ball_Dot terlalu kecil
 if ball_Dot < -0.2 then
     aura_table.ball_Warping = tick()
 end
 
--- Logika tambahan untuk mendeteksi perubahan arah yang tajam atau akselerasi mendadak
-local angle_threshold = 0.35  -- Threshold tambahan untuk mendeteksi perubahan arah (bisa disesuaikan)
-local speed_threshold = 15    -- Threshold untuk kecepatan bola yang mungkin menyebabkan warping (bisa disesuaikan)
+-- Logika tambahan untuk mendeteksi perubahan arah tajam atau akselerasi mendadak
+local angle_threshold = 0.35  -- Threshold tambahan untuk mendeteksi perubahan arah
+local speed_threshold = 15    -- Threshold untuk kecepatan bola yang mungkin menyebabkan warping
 local recent_angle = aura_table.previous_angle or velocity_angle  -- Membandingkan dengan sudut sebelumnya untuk perubahan tajam
 
 -- Deteksi perubahan arah tajam dan kecepatan tinggi yang mungkin menunjukkan warping
@@ -1013,10 +1018,11 @@ task.spawn(function()
     aura_table.is_ball_Warping = true
 end)
 
--- Menambah faktor berdasarkan kecepatan dan jarak bola
+-- Menambah faktor berdasarkan kecepatan dan jarak bola untuk deteksi parry
 local adjusted_SpeedFactor = ball_Speed / speedFactor
 local adjusted_DistanceFactor = ball_Distance / 10
 
+-- Mengatur kondisi untuk memulai parry
 if ball_Distance <= (aura_table.parry_Range + adjusted_SpeedFactor + adjusted_DistanceFactor)
    and not aura_table.is_ball_Warping
    and ball_Speed > 0 
