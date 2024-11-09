@@ -803,6 +803,7 @@ Takentime = tick() - aura_table.hit_Time
 end)
 
 local stopSpamming = false
+local spamTask -- Menyimpan ID task untuk kontrol lebih lanjut
 
 task.spawn(function()
     autospamvar = RunService.Heartbeat:Connect(function()
@@ -815,6 +816,10 @@ task.spawn(function()
             ismyautoparryspamming = false
             aura_table.spam_Range = 0
             stopSpamming = true  -- Set flag untuk menghentikan task.spawn
+            if spamTask then
+                task.cancel(spamTask) -- Hentikan task jika aktif
+                spamTask = nil
+            end
             return
         end
 
@@ -838,7 +843,7 @@ task.spawn(function()
                 }
 
                 -- Task.spawn yang akan berhenti jika `stopSpamming` aktif
-                task.spawn(function()
+                spamTask = task.spawn(function()
                     for count = 1, potanum do
                         -- Cek apakah perlu berhenti
                         if stopSpamming then break end
@@ -863,11 +868,19 @@ task.spawn(function()
                 -- Reset jika keluar dari range
                 ismyautoparryspamming = false
                 stopSpamming = true  -- Set untuk menghentikan task.spawn
+                if spamTask then
+                    task.cancel(spamTask) -- Hentikan task jika keluar dari range
+                    spamTask = nil
+                end
             end
         else
             -- Reset jika tidak ada entity terdekat
             ismyautoparryspamming = false
             stopSpamming = true  -- Set untuk menghentikan task.spawn
+            if spamTask then
+                task.cancel(spamTask) -- Hentikan task jika tidak ada entity terdekat
+                spamTask = nil
+            end
         end
     end)
 
