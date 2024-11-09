@@ -999,7 +999,15 @@ task.spawn(function()
     aura_table.is_ball_Warping = true
 end)
 
-    if ball_Distance <= aura_table.parry_Range and not aura_table.is_ball_Warping and ball_Speed > 0 and ball_Dot > 0.1 then
+-- Menambah faktor berdasarkan kecepatan dan jarak bola
+local adjusted_SpeedFactor = ball_Speed / speedFactor
+local adjusted_DistanceFactor = ball_Distance / 10
+
+if ball_Distance <= (aura_table.parry_Range + adjusted_SpeedFactor + adjusted_DistanceFactor)
+   and not aura_table.is_ball_Warping
+   and ball_Speed > 0 
+   and ball_Dot > 0.1 then
+   -- Logic parry akan dilanjutkan jika semua kondisi terpenuhi
         local cf = camera.CFrame
         local target_X = targetPosition.X
         local target_Y = targetPosition.Y
