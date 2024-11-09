@@ -838,7 +838,7 @@ task.spawn(function()
                 local shouldStopSpam = false
 
                 -- Perform spamming asynchronously for speed using task.defer
-                task.defer(function()
+                task.spawn(function()
                     for count = 1, potanum do
                         -- Check if we should stop spamming
                         if shouldStopSpam then break end
