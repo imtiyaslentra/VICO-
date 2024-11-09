@@ -804,9 +804,7 @@ end)
 
 task.spawn(function()
     autospamvar = RunService.Heartbeat:Connect(function()
-        -- Pre-check if auto_spam is enabled, player exists, and not in training mode
         if not auto_spam or not workspace.Alive:FindFirstChild(local_player.Name) or training_mode then
-            -- Reset aura table and spam states
             aura_table.hit_Count = 0
             aura_table.is_Spamming = false
             aura_table.last_target = nil
@@ -815,17 +813,14 @@ task.spawn(function()
             return
         end
 
-        -- Proceed only if closest entity is valid and in workspace
         if closest_Entity and workspace.Alive:FindFirstChild(closest_Entity.Name) and ((not standalone and aura_table.is_Spamming) or (standalone)) then
             local playerPosition = local_player.Character.PrimaryPart.Position
             local entityPosition = closest_Entity.HumanoidRootPart.Position
             local distanceToEntity = local_player:DistanceFromCharacter(entityPosition)
 
-            -- Perform spam actions only when within range
             if distanceToEntity <= aura_table.spam_Range then
                 ismyautoparryspamming = true
 
-                -- Pre-compute values before the loop for efficiency
                 local cf = camera.CFrame
                 local randomTarget = Vector3.new(math.random(-1000, 1000), math.random(0, 1000), math.random(100, 1000))
                 local targetPosition = closest_Entity_To_mouse.HumanoidRootPart.Position
@@ -834,16 +829,15 @@ task.spawn(function()
                     {targetPosition.X, targetPosition.Y}
                 }
 
-                -- Set flag to control when to stop spamming
                 local shouldStopSpam = false
 
-                -- Perform spamming asynchronously for speed using task.defer
                 task.spawn(function()
                     for count = 1, potanum do
-                        -- Check if we should stop spamming
                         if shouldStopSpam then break end
 
-                        -- Only continue if auto_spam and target conditions are met
+                        -- Tambahkan task.wait() agar ada jeda dalam pengiriman sinyal
+                        task.wait(0.01)
+
                         if auto_spam and workspace.Alive:FindFirstChild(local_player.Name) and closest_Entity and workspace.Alive:FindFirstChild(closest_Entity.Name) then
                             if auto_curve then
                                 originalParryRemote:FireServer(0, CFrame.new(cf.Position, randomTarget), unpack(fireArgs))
@@ -851,17 +845,14 @@ task.spawn(function()
                                 originalParryRemote:FireServer(0, cf, unpack(fireArgs))
                             end
                         else
-                            -- Set flag to stop spamming if conditions are no longer met
                             shouldStopSpam = true
                         end
                     end
                 end)
             else
-                -- Reset spam state if out of range
                 ismyautoparryspamming = false
             end
         else
-            -- Reset spam state if entity is not found
             ismyautoparryspamming = false
         end
     end)
